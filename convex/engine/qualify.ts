@@ -50,6 +50,52 @@ export function qualify(lead: Lead, card: DealCard): QualVerdict {
   return { leadId: lead.id, decision: "PURSUE", netAtFloorCents, headroomCents, reason: "clears the floor with room — open it" };
 }
 
+// Portfolio impact — the aggregate ROI number. Run the close forward over the whole
+// candidate list and sum the margin Parley holds versus a discounter that matches the
+// competitor's price to win each deal. Same engine, same floor; this is just the close's
+// arithmetic totalled across the funnel, so the headline ("held $X a discounter would
+// have given away") is grounded, not a guess. Every point of that is a point of CAC.
+export interface PortfolioImpact {
+  dealsConsidered: number;
+  dealsPursued: number; // not SKIP
+  dealsSkipped: number;
+  unitsPursued: number;
+  parleyNetCents: number; // close at full price + the matching lever, summed
+  discounterNetCents: number; // matching the competitor's price, summed
+  marginHeldCents: number; // parleyNet − discounterNet
+  discounterPricePerUnitCents: number;
+}
+
+export function portfolioImpact(card: DealCard, leads: Lead[]): PortfolioImpact {
+  const discounterPpu = card.competitor.pricePerUnitCents;
+  let dealsPursued = 0;
+  let dealsSkipped = 0;
+  let unitsPursued = 0;
+  let parleyNetCents = 0;
+  let discounterNetCents = 0;
+  for (const lead of leads) {
+    const v = qualify(lead, card);
+    if (v.decision === "SKIP") {
+      dealsSkipped++;
+      continue;
+    }
+    dealsPursued++;
+    unitsPursued += lead.estUnits;
+    parleyNetCents += v.netAtFloorCents;
+    discounterNetCents += discounterPpu * lead.estUnits;
+  }
+  return {
+    dealsConsidered: leads.length,
+    dealsPursued,
+    dealsSkipped,
+    unitsPursued,
+    parleyNetCents,
+    discounterNetCents,
+    marginHeldCents: parleyNetCents - discounterNetCents,
+    discounterPricePerUnitCents: discounterPpu,
+  };
+}
+
 // The seeded candidate pipeline (the live Orange Slice enrich call can replace these).
 export const SEED_LEADS: Lead[] = [
   { id: "l1", company: "Walmart", estUnits: 1400, likelyPriority: "speed", claimedScale: "Walmart", source: "seed" },

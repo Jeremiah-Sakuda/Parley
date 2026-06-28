@@ -18,7 +18,7 @@ export const runRace = action({
     finalNetCents: v.number(),
     floorCents: v.number(),
     breached: v.boolean(),
-    conflicts: v.number(),
+    rejected: v.number(),
     attempts: v.number(),
   }),
   handler: async (
@@ -29,7 +29,7 @@ export const runRace = action({
     finalNetCents: number;
     floorCents: number;
     breached: boolean;
-    conflicts: number;
+    rejected: number;
     attempts: number;
   }> => {
     // Each mode runs on its OWN ledger key, so naive + guarded can run in parallel
@@ -52,7 +52,11 @@ export const runRace = action({
       finalNetCents,
       floorCents: FLOOR,
       breached: finalNetCents < FLOOR,
-      conflicts: K - accepted, // concessions the contended head rejected (0 for naive)
+      // Concessions the floor clamp rejected (0 for naive, which never re-checks the
+      // updated head). This counts floor-rejections, not OCC aborts; the real OCC retry
+      // happens live when these K mutations contend on the one head on the deployed
+      // backend (convex-test runs single-threaded, so it can't surface aborts).
+      rejected: K - accepted,
       attempts: K,
     };
   },

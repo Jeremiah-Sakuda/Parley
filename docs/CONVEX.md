@@ -123,6 +123,7 @@ Most of Parley runs in Convex's default (V8) runtime, which supports `fetch` —
 | `agent.context` / `cacheGet` / `cachePut` | internal | history + response cache |
 | `verifyLive.lookup` | **node action** | live Orange Slice company verification (fail-open) |
 | `pipeline.qualifyLeads` | query | top-of-funnel PURSUE/WATCH/SKIP (engine run forward) |
+| `pipeline.portfolio` | query | aggregate ROI: margin held across the funnel vs a discounter |
 | `pipeline.loadLead` | action | open a lead in the console |
 | `harness.runRace` | action | the commit-safety A/B (naive vs guarded) |
 | `harnessOps.*` | internal | the two commit strategies + ledger ops |

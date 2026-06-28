@@ -2,7 +2,7 @@ import { query, action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { v } from "convex/values";
 import { loadCard } from "./lib/cards";
-import { SEED_LEADS, qualify } from "./engine/qualify";
+import { SEED_LEADS, qualify, portfolioImpact } from "./engine/qualify";
 
 // The top-of-funnel bookend. Each lead is scored by the SAME engine run forward, so
 // the pipeline only flags deals that clear the seller's one floor. The SKIP is the
@@ -37,6 +37,27 @@ export const qualifyLeads = query({
         headroomCents: verdict.headroomCents,
       };
     });
+  },
+});
+
+// The aggregate ROI number: the close run forward over the whole candidate list,
+// totalling the margin Parley holds vs a discounter that matches the competitor's price.
+// Reactive, so it tracks live control-panel edits (raise the floor, watch it re-solve).
+export const portfolio = query({
+  args: { scenarioId: v.string() },
+  returns: v.object({
+    dealsConsidered: v.number(),
+    dealsPursued: v.number(),
+    dealsSkipped: v.number(),
+    unitsPursued: v.number(),
+    parleyNetCents: v.number(),
+    discounterNetCents: v.number(),
+    marginHeldCents: v.number(),
+    discounterPricePerUnitCents: v.number(),
+  }),
+  handler: async (ctx, { scenarioId }) => {
+    const card = await loadCard(ctx, scenarioId);
+    return portfolioImpact(card, SEED_LEADS);
   },
 });
 

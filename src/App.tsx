@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
 import { BuyerChat } from "./components/BuyerChat";
+import { PortfolioImpact } from "./components/PortfolioImpact";
 import { OfferCard } from "./components/OfferCard";
 import { ControlPanel } from "./components/ControlPanel";
 import { NetValueMeter } from "./components/NetValueMeter";
@@ -22,13 +25,30 @@ import "./App.css";
 type ShellView = "home" | "demo";
 type DemoView = "pipeline" | "negotiate";
 
+// Land straight in the product (not the marketing page) when the URL signals a demo:
+// the scripted recording flag, or an explicit ?demo / ?app. A plain visit still gets home.
+function deepLinkedToDemo(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("mode") === "scripted" || params.has("demo") || params.has("app");
+}
+
 export default function App() {
-  const [shell, setShell] = useState<ShellView>("home");
-  const [demoView, setDemoView] = useState<DemoView>("pipeline");
+  const deepLinked = deepLinkedToDemo();
+  const [shell, setShell] = useState<ShellView>(deepLinked ? "demo" : "home");
+  const [demoView, setDemoView] = useState<DemoView>(deepLinked ? "negotiate" : "pipeline");
   const [scenarioId, setScenarioId] = useState(DEFAULT_SCENARIO_ID);
   const [autoMessage, setAutoMessage] = useState<string | null>(null);
   const scripted = isScriptedMode();
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+
+  // Seed-on-load so a cold URL shows the real deal (offer + receipt consistent), not an
+  // empty shell. seed.run is idempotent: it creates the baseline only if it's missing and
+  // never wipes an in-progress demo.
+  const ensureSeeded = useMutation(api.seed.run);
+  useEffect(() => {
+    ensureSeeded({}).catch(() => {});
+  }, [ensureSeeded]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -76,6 +96,12 @@ export default function App() {
               Negotiate
             </button>
           </nav>
+          <span
+            className="agent-ready-badge"
+            title="A buyer AI agent can negotiate over MCP (mcp/ + convex/http.ts) and still cannot be talked below the floor"
+          >
+            Agent-ready · MCP
+          </span>
           {scripted && (
             <span className="scripted-mode-badge" title="Deterministic turns with no OpenAI calls">
               Scripted mode
@@ -113,6 +139,7 @@ export default function App() {
               negotiationId={NEGOTIATION_ID}
               onOpenLead={handleOpenLead}
             />
+            <PortfolioImpact scenarioId={PIPELINE_SCENARIO_ID} />
           </div>
         ) : (
           <>

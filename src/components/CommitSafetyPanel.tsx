@@ -12,7 +12,7 @@ type RaceResult = {
   finalNetCents: number;
   floorCents: number;
   breached: boolean;
-  conflicts: number;
+  rejected: number;
   attempts: number;
 };
 
@@ -81,7 +81,9 @@ function RacePanel({ label, result }: { label: string; result: RaceResult | null
       <div className="race-stats">
         <span>Final net: {formatCents(result.finalNetCents)}</span>
         <span>Floor: {formatCents(result.floorCents)}</span>
-        <span>Conflicts: {result.conflicts}</span>
+        <span title="Concessions the floor clamp rejected (not OCC aborts)">
+          Rejected by floor: {result.rejected}
+        </span>
         <span>Attempts: {result.attempts}</span>
       </div>
       {result.mode === "guarded" && (
