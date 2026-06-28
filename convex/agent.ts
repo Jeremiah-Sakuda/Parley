@@ -1,4 +1,5 @@
 import { action, internalQuery, internalMutation } from "./_generated/server";
+import type { ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { buildSystemPrompt, LLM_PROPOSAL_SCHEMA } from "./agent/contract";
@@ -115,11 +116,19 @@ export const cachePut = internalMutation({
 // fail-open), then the deterministic fixtured lookup — so the gate always returns a
 // verdict and the demo runs with zero network dependency.
 async function verifyCompany(
+  ctx: ActionCtx,
   claim: string | null,
   whaleMinEmployees: number
 ): Promise<Verdict> {
   if (!claim) return "NOT_FOUND";
-  // (live Orange Slice lookup goes here, fail-open) — spine-safe fixtured lookup:
+  // Live Orange Slice lookup first (fail-open); fall back to the deterministic
+  // fixtured verifier if it's unavailable or returns nothing usable.
+  try {
+    const live = await ctx.runAction(internal.verifyLive.lookup, { claim });
+    if (live && live.employees > 0) return scoreVerdict(live, whaleMinEmployees);
+  } catch {
+    /* fail open → fixture */
+  }
   return scoreVerdict(fixtureLookup(claim), whaleMinEmployees);
 }
 
@@ -142,7 +151,7 @@ export const respond = action({
     // pricing — never grants it.
     if (attack && attack.type === "identity") {
       const claim = extractCompanyClaim(buyerText);
-      const verdict = await verifyCompany(claim, card.whaleMinEmployees);
+      const verdict = await verifyCompany(ctx, claim, card.whaleMinEmployees);
       const status = verdictLabel(verdict, claim);
       if (verdictUnlocksAccountPricing(verdict)) {
         await ctx.runMutation(internal.negotiate.setVerify, {

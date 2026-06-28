@@ -31,6 +31,7 @@ import type * as negotiate from "../negotiate.js";
 import type * as offers from "../offers.js";
 import type * as receipt from "../receipt.js";
 import type * as seed from "../seed.js";
+import type * as verifyLive from "../verifyLive.js";
 
 import type {
   ApiFromModules,
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   offers: typeof offers;
   receipt: typeof receipt;
   seed: typeof seed;
+  verifyLive: typeof verifyLive;
 }>;
 
 /**
