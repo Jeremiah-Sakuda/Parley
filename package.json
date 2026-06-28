@@ -27,5 +27,7 @@
     "typescript": "~6.0.2",
     "vite": "^8.1.0",
     "vitest": "^4.1.9"
-  }
+  },
+  "description": "Seller-side AI negotiation agent that protects margin — the LLM can talk, but only the deterministic Convex engine can commit.",
+  "license": "MIT"
 }
