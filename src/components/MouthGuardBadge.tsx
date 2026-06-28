@@ -8,15 +8,21 @@ interface MouthGuardBadgeProps {
 export function MouthGuardBadge({ negotiationId }: MouthGuardBadgeProps) {
   const live = useQuery(api.negotiate.liveState, { negotiationId });
 
-  if (live === undefined || live === null) return null;
+  if (live === undefined) return null;
+
+  const overridden = live?.mouthGuardOverridden ?? false;
 
   return (
     <span
-      className={`mouth-guard-badge ${live.mouthGuardOverridden ? "overridden" : "armed"}`}
+      className={`mouth-guard-badge ${overridden ? "overridden" : "armed"}`}
+      title={
+        overridden
+          ? "LLM prose replaced with safe template — engine numbers unchanged"
+          : "Watching seller text — engine commits all numbers"
+      }
     >
-      {live.mouthGuardOverridden
-        ? "Mouth-guard · overridden — safe template"
-        : "Mouth-guard · armed"}
+      <span className={`mouth-guard-dot${overridden ? " overridden" : ""}`} aria-hidden />
+      {overridden ? "Mouth-guard · overridden" : "Mouth-guard · armed"}
     </span>
   );
 }

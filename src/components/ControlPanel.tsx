@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import type { DealCard } from "../lib/contractApi";
 import { centsToDollars, dollarsToCents } from "../utils/money";
-import { patchField } from "../utils/patchField";
 
 interface ControlPanelProps {
   scenarioId: string;
 }
 
 export function ControlPanel({ scenarioId }: ControlPanelProps) {
-  const serverDeal = useQuery(api.deals.activeCard, { scenarioId });
+  const deal = useQuery(api.deals.activeCard, { scenarioId });
   const update = useMutation(api.dealCard.update);
-  const [localDeal, setLocalDeal] = useState<DealCard | null>(null);
   const [lastWrite, setLastWrite] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (serverDeal) setLocalDeal(serverDeal as DealCard);
-  }, [serverDeal]);
 
   useEffect(() => {
     if (lastWrite === null) return;
@@ -25,9 +18,7 @@ export function ControlPanel({ scenarioId }: ControlPanelProps) {
     return () => clearTimeout(t);
   }, [lastWrite]);
 
-  const deal = localDeal;
-
-  if (serverDeal === undefined || deal === null) {
+  if (deal === undefined) {
     return (
       <section className="panel control-panel">
         <header className="panel-header">
@@ -39,7 +30,6 @@ export function ControlPanel({ scenarioId }: ControlPanelProps) {
   }
 
   function write(field: string, value: unknown) {
-    setLocalDeal((prev) => (prev ? patchField(prev, field, value) : prev));
     setLastWrite(Date.now());
     void update({ scenarioId, field, value });
   }

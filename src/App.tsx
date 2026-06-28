@@ -5,6 +5,7 @@ import { ControlPanel } from "./components/ControlPanel";
 import { NetValueMeter } from "./components/NetValueMeter";
 import { ReceiptCard } from "./components/ReceiptCard";
 import { MouthGuardBadge } from "./components/MouthGuardBadge";
+import { DemoResetButton } from "./components/DemoResetButton";
 import { DEFAULT_SCENARIO_ID, NEGOTIATION_ID, SCENARIOS } from "./constants";
 import "./App.css";
 
@@ -24,6 +25,7 @@ export default function App() {
         </div>
         <div className="header-meta">
           <MouthGuardBadge negotiationId={NEGOTIATION_ID} />
+          <DemoResetButton scenarioId={scenarioId} />
           <label className="scenario-select">
             <span className="sr-only">Scenario</span>
             <select
@@ -43,13 +45,13 @@ export default function App() {
 
       <main className="app-main">
         <div className="column column-left">
-          <BuyerChat negotiationId={NEGOTIATION_ID} />
+          <BuyerChat negotiationId={NEGOTIATION_ID} scenarioId={scenarioId} />
           <OfferCard negotiationId={NEGOTIATION_ID} />
         </div>
 
         <div className="column column-right">
-          <ControlPanel scenarioId={scenarioId} />
           <NetValueMeter negotiationId={NEGOTIATION_ID} />
+          <ControlPanel scenarioId={scenarioId} />
           <ReceiptCard negotiationId={NEGOTIATION_ID} />
         </div>
       </main>

@@ -32,6 +32,8 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
     );
   }
 
+  const listTotalCents = receipt.netValueCents + receipt.concessionCostCents;
+
   return (
     <section className="panel receipt-card">
       <header className="panel-header">
@@ -40,16 +42,24 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
       </header>
 
       <div className="receipt-lines">
+        <div className="receipt-section-label mono-label">Order</div>
         <div className="receipt-row">
           <span>Price held / unit</span>
           <span className="mono">{formatCentsPrecise(receipt.priceHeldCents)}</span>
         </div>
+        <div className="receipt-row indent">
+          <span>List total</span>
+          <span className="mono">{formatCents(listTotalCents)}</span>
+        </div>
 
+        <div className="receipt-divider" />
+
+        <div className="receipt-section-label mono-label">Value traded</div>
         {receipt.valueTraded.length > 0 ? (
           receipt.valueTraded.map((item) => (
             <div key={item.leverId} className="receipt-row indent">
               <span>{leverLabel(item.leverId)}</span>
-              <span className="mono">−{formatCents(item.costCents)}</span>
+              <span className="mono concession">−{formatCents(item.costCents)}</span>
             </div>
           ))
         ) : (
@@ -58,9 +68,10 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
 
         <div className="receipt-divider" />
 
+        <div className="receipt-section-label mono-label">Summary</div>
         <div className="receipt-row">
           <span>Concession cost</span>
-          <span className="mono">−{formatCents(receipt.concessionCostCents)}</span>
+          <span className="mono concession">−{formatCents(receipt.concessionCostCents)}</span>
         </div>
         <div className="receipt-row highlight">
           <span>Net value</span>
@@ -81,7 +92,9 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
 
         <div className="receipt-divider" />
 
-        <div className="receipt-row">
+        <div
+          className={`receipt-row${receipt.manipulationBlocked > 0 ? " blocked" : ""}`}
+        >
           <span>Manipulation blocked</span>
           <span className="mono">{receipt.manipulationBlocked}</span>
         </div>

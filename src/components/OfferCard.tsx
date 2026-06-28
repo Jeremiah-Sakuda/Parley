@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { formatCents, formatCentsPrecise } from "../utils/money";
@@ -9,12 +10,25 @@ interface OfferCardProps {
 
 export function OfferCard({ negotiationId }: OfferCardProps) {
   const offer = useQuery(api.offers.current, { negotiationId });
+  const prevNet = useRef<number | null>(null);
+  const [flash, setFlash] = useState(false);
+
+  useEffect(() => {
+    if (offer === undefined || offer === null) return;
+    if (prevNet.current !== null && prevNet.current !== offer.netValueCents) {
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), 500);
+      return () => clearTimeout(t);
+    }
+    prevNet.current = offer.netValueCents;
+  }, [offer]);
 
   if (offer === undefined) {
     return (
       <section className="panel offer-card">
         <header className="panel-header">
           <h2>Engine offer</h2>
+          <span className="mono-label">Deterministic commit</span>
         </header>
         <p className="loading">Loading offer…</p>
       </section>
@@ -26,8 +40,12 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
       <section className="panel offer-card">
         <header className="panel-header">
           <h2>Engine offer</h2>
+          <span className="mono-label">Deterministic commit</span>
         </header>
-        <p className="empty">No offer yet — engine has not committed.</p>
+        <p className="empty">Waiting for the engine to commit an offer…</p>
+        <p className="offer-caption">
+          Only numbers written by the engine appear here — never parsed from chat.
+        </p>
       </section>
     );
   }
@@ -35,7 +53,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
   const leverChips = offer.appliedLevers.map(leverLabel);
 
   return (
-    <section className="panel offer-card">
+    <section className={`panel offer-card${flash ? " offer-card-flash" : ""}`}>
       <header className="panel-header">
         <h2>Engine offer</h2>
         <span className={`status-badge status-${offer.status}`}>{offer.status}</span>
@@ -75,7 +93,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
       </div>
 
       <p className="offer-caption">
-        Numbers from engine only — never parsed from chat.
+        Engine commit · updates reactively when the seller turn lands.
       </p>
     </section>
   );

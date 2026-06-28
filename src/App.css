@@ -166,7 +166,142 @@
 .header-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.demo-reset-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.demo-reset-btn:hover:not(:disabled) {
+  border-color: var(--green);
+  color: var(--text);
+}
+
+.demo-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.discovery-peak {
+  color: var(--dim);
+}
+
+.discovery-peak.discovery-ready {
+  color: var(--green);
+}
+
+.probe-bubble {
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.12);
+}
+
+.chat-bubble {
+  animation: bubbleIn 0.25s ease both;
+}
+
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.confidence-threshold {
+  color: var(--green);
+}
+
+.quick-prompts {
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--border);
+}
+
+.quick-prompts .mono-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.quick-prompt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-prompt-chip {
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.quick-prompt-chip:hover:not(:disabled) {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--text);
+}
+
+.quick-prompt-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mouth-guard-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.mouth-guard-dot.overridden {
+  background: var(--amber);
+}
+
+.mouth-guard-badge.armed .mouth-guard-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.receipt-section-label {
+  margin-bottom: 4px;
+}
+
+.receipt-row .concession {
+  color: var(--muted);
+}
+
+.column-right .net-value-meter {
+  order: -1;
 }
 
 .scenario-tag {
@@ -286,8 +421,19 @@
   margin-top: 4px;
 }
 
-.confidence-strip {
+.confidence-wrap {
   margin-top: 8px;
+}
+
+.confidence-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+
+.confidence-strip {
   height: 3px;
   background: var(--border);
   border-radius: 2px;
@@ -297,7 +443,24 @@
 .confidence-fill {
   height: 100%;
   background: var(--green);
-  transition: width 0.3s ease;
+  transition: width 0.35s ease;
+}
+
+.chat-bubble.seller-pending {
+  align-self: flex-start;
+  opacity: 0.75;
+}
+
+.thinking-dots {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+
+.offer-card-flash {
+  border-color: rgba(16, 185, 129, 0.55);
+  transition: border-color 0.3s ease;
 }
 
 .chat-composer {
@@ -647,6 +810,14 @@
   color: var(--amber);
   border-color: rgba(245, 158, 11, 0.4);
   background: var(--amber-dim);
+}
+
+.receipt-row.blocked {
+  color: var(--amber);
+}
+
+.receipt-row.blocked .mono {
+  font-weight: 600;
 }
 
 /* Commit safety */

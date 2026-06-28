@@ -2,7 +2,7 @@
 
 Seller-side AI negotiation agent for the [Convex Growth Hackathon](https://convex.link/growthhack).
 
-**Live demo:** _(deploy URL pending — run `npx convex dev` then connect Vercel)_
+**Live demo:** https://parley-ak4b.vercel.app/ · **Convex prod:** `https://fabulous-corgi-451.convex.cloud`
 
 > The LLM can talk, but it **cannot commit**. Only the deterministic economics engine can commit an offer.
 
@@ -22,11 +22,26 @@ npx convex env set OPENAI_API_KEY sk-...
 
 ## Deploy (Vercel)
 
-- **Build command:** `npx convex deploy --cmd 'npm run build'`
-- **Output directory:** `dist`
-- Add `VITE_CONVEX_URL` from your Convex production deployment in Vercel env vars (or use Convex's Vercel integration).
+**Convex production URL:** `https://fabulous-corgi-451.convex.cloud`
 
-Optional: set `VITE_SHOW_COMMIT_SAFETY=true` to show the Sprint 6 commit-safety A/B panel.
+Full step-by-step (including why the first build failed): **[`docs/DEPLOY.md`](docs/DEPLOY.md)**
+
+**TL;DR — pick one:**
+
+| Path | Build command | Vercel env var |
+|------|---------------|----------------|
+| **A (integrated)** | `npx convex deploy --cmd 'npm run build'` | `CONVEX_DEPLOY_KEY` from Convex dashboard |
+| **B (quick)** | `npm run build` | `VITE_CONVEX_URL` = `https://fabulous-corgi-451.convex.cloud` |
+
+Also run once locally: `npx convex env set OPENAI_API_KEY sk-... --prod`
+
+**After first deploy — seed prod** (creates `n1`, deal cards, and the standing offer row):
+
+```bash
+npx convex run seed:run --prod
+```
+
+Without seed, the live site shows: meter at **$10,000** (list total, no concessions), **Offer card empty**, receipt still on the Sprint 0 fixture ($9,604). After seed, offer card and meter align at $10,000 until concessions commit.
 
 ## Architecture
 
