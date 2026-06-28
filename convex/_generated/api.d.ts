@@ -9,6 +9,8 @@
  */
 
 import type * as agent from "../agent.js";
+import type * as agent_contract from "../agent/contract.js";
+import type * as agent_decide from "../agent/decide.js";
 import type * as dealCard from "../dealCard.js";
 import type * as deals from "../deals.js";
 import type * as engine_clamp from "../engine/clamp.js";
@@ -34,6 +36,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
+  "agent/contract": typeof agent_contract;
+  "agent/decide": typeof agent_decide;
   dealCard: typeof dealCard;
   deals: typeof deals;
   "engine/clamp": typeof engine_clamp;

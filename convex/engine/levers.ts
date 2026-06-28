@@ -29,3 +29,8 @@ export function selectLevers(
   if (listTotal(card) - lever.costCents < card.floorCents) return [];
   return [leverId];
 }
+
+// The lever that answers a given constraint (used by the agent's fallback proposal).
+export function leverIdForConstraint(constraint: ConstraintTag): string {
+  return CONSTRAINT_TO_LEVER[constraint];
+}
