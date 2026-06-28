@@ -61,7 +61,7 @@ The opponent is concurrency, not a competitor — it's our own engine, two ways.
 
 ```
 guarded: net = $8,000   breached = false   (4 of 64 land, 60 aborted/rejected — floor held EXACTLY)
-naive:   net = -$15,000  breached = true    (64 of 64 land — what an unserialized race looks like)
+naive:   net = -$22,000  breached = true    (64 of 64 land — what an unserialized race looks like)
 ```
 
 Guarded landing at *exactly* the floor under 64 simultaneous writers is only possible if Convex serialized them on the one head, aborting and retrying the losers against the updated cost. That is the OCC retry, demonstrated, not asserted. (See **[`docs/BREACH_AUDIT.md`](BREACH_AUDIT.md)** for this plus the eight structural breach vectors, all SAFE.)
@@ -84,6 +84,8 @@ Sources: [docs.convex.dev/database/advanced/occ](https://docs.convex.dev/databas
 The net-value number climbing on screen, the offer card flashing, the receipt updating, the "manipulation blocked" counter ticking — none of that is polling or websocket code. It's Convex `useQuery` **subscriptions**: when `commitConcession` writes the offer/ledger docs, every query whose result depends on them re-runs and the components re-render.
 
 The **"it's not hardcoded" control-panel demo** falls out of the same property: `dealCard.update` patches the deal card, and `negotiate.liveState` **derives** net from the *live* card — so a judge editing the floor re-solves the meter on the next read with no extra wiring.
+
+The hot read path stays cheap: `liveState` reads the **denormalized** running-sum off the contended head and the lever list off the offer doc (both O(1)), rather than re-collecting and re-summing every concession entry on each reactive read. The immutable `concessionEntries` are the audit source that `receipt.get` reads, and the reconciliation invariant keeps the head, the offer, and the entries in sync.
 
 ---
 
@@ -154,6 +156,17 @@ surface is buyer-side talk/read only, so an agent can say anything and read ever
 the net still cannot move below the floor. `tests/convex_http.test.ts` proves it: a batch of
 adversarial buyer turns over the HTTP path, net always `≥` floor. The HTTP layer is a thin
 shell; the guarantee is still the serializable mutation underneath. See **`docs/MCP.md`**.
+
+### Scope of the guarantee (what it does and doesn't cover)
+
+The floor guarantee is precise: **no buyer / negotiation path can move the committed net
+below the floor.** The buyer reaches only `/agent/say` (no commit, no policy edit), and the
+commit mutation is internal and takes a `leverId`, never a number. The *floor itself* is
+seller policy. `dealCard.update` (the live control panel) edits that policy, and it is a
+**seller-admin surface, not part of the buyer-facing agent surface** — a different threat
+model. It is intentionally left open here so a judge can edit the floor and watch the meter
+re-solve live; in production it would be auth-gated to the seller-admin role. So "the buyer
+can't cross the floor" holds; "the seller configures the floor" is by design.
 
 ---
 

@@ -24,7 +24,11 @@ export const lookup = internalAction({
     if (!apiKey) return null;
     try {
       configure({ apiKey });
-      const safe = claim.replace(/['";\\]/g, "").slice(0, 60);
+      // Allowlist, not blocklist: keep only characters that appear in real company names,
+      // so no quote, semicolon, backslash, percent (the ILIKE wildcard), or apostrophe can
+      // reach the interpolated query. The SDK takes a raw SQL string (no bound params), so
+      // this plus the fail-open + length cap is the defense for untrusted buyer input.
+      const safe = claim.replace(/[^A-Za-z0-9 &.-]/g, "").slice(0, 60);
       // Resolve the claim to the LARGEST company matching the name (so "Walmart"
       // resolves to the 2M-employee entry, not a tiny namesake).
       const searchP = services.company.linkedin.search({

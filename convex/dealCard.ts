@@ -60,9 +60,16 @@ async function resync(ctx: MutationCtx, scenarioId: string, card: DealCard) {
   }
 }
 
-// Real impl (Sprint 2): patch the live deal card by dot-path field (upserting from
-// the fixture on first edit), then re-solve dependent negotiations. This is the
-// "it's not hardcoded" demo — a judge edits the floor and the meter flips live.
+// Patch the live deal card by dot-path field (upserting from the fixture on first edit),
+// then re-solve dependent negotiations. This is the "it's not hardcoded" demo: a judge
+// edits the floor and the meter flips live.
+//
+// THREAT MODEL: this is a SELLER-ADMIN surface, not part of the buyer-facing agent surface
+// (convex/http.ts). It edits the seller's own policy (floor, lever costs). The floor
+// guarantee is "no buyer/negotiation path can cross the floor", which holds: the buyer
+// reaches only /agent/say (no commit, no card edit). The card is the seller's configuration;
+// in production this mutation would be auth-gated to the seller-admin role. It is left open
+// here so a judge can edit the floor live in the demo. See docs/CONVEX.md.
 export const update = mutation({
   args: { scenarioId: v.string(), field: v.string(), value: v.any() },
   returns: v.null(),

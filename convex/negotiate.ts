@@ -27,14 +27,19 @@ export const liveState = query({
       .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
       .unique();
     const card = await loadCard(ctx, neg?.scenarioId ?? "deal-a");
-    const entries = neg
+    // Read the running-sum off the contended head and the lever list off the offer doc,
+    // instead of re-collecting and re-summing every concession entry on each reactive read.
+    // Both are O(1) denormalized reads; the immutable entries are the audit source that
+    // `receipt.get` reads, and the reconciliation invariant keeps all three in sync.
+    const head = neg ? await ctx.db.get(neg.ledgerId) : null;
+    const offer = neg
       ? await ctx.db
-          .query("concessionEntries")
+          .query("offers")
           .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
-          .collect()
-      : [];
-    const appliedCost = entries.reduce((a, e) => a + e.costCents, 0);
-    const appliedLevers = entries.map((e) => e.leverId);
+          .first()
+      : null;
+    const appliedCost = head?.appliedCostCents ?? 0;
+    const appliedLevers = offer?.appliedLevers ?? [];
     const d = deriveLive(card, appliedCost, appliedLevers.length);
     return {
       status: d.status,
