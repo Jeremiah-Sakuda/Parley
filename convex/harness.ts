@@ -32,17 +32,20 @@ export const runRace = action({
     conflicts: number;
     attempts: number;
   }> => {
-    const ledgerId = await ctx.runMutation(internal.harnessOps.reset, {});
-    // Fire K concessions CONCURRENTLY at the one ledger.
+    // Each mode runs on its OWN ledger key, so naive + guarded can run in parallel
+    // (as the panel does) without contaminating each other's tally.
+    const key = `__harness_${mode}__`;
+    const ledgerId = await ctx.runMutation(internal.harnessOps.reset, { key });
+    // Fire K concessions CONCURRENTLY at this mode's ledger.
     const results = await Promise.all(
       Array.from({ length: K }, () =>
         mode === "naive"
-          ? ctx.runMutation(internal.harnessOps.naiveCommit, { ledgerId, costCents: CONCESSION })
-          : ctx.runMutation(internal.harnessOps.guardedCommit, { ledgerId, costCents: CONCESSION })
+          ? ctx.runMutation(internal.harnessOps.naiveCommit, { ledgerId, key, costCents: CONCESSION })
+          : ctx.runMutation(internal.harnessOps.guardedCommit, { ledgerId, key, costCents: CONCESSION })
       )
     );
     const accepted = results.filter(Boolean).length;
-    const appliedCostCents = await ctx.runQuery(internal.harnessOps.tally, {});
+    const appliedCostCents = await ctx.runQuery(internal.harnessOps.tally, { key });
     const finalNetCents = LIST_TOTAL - appliedCostCents;
     return {
       mode,
