@@ -12,7 +12,7 @@ Seller-side AI negotiation agent for the [Convex Growth Hackathon](https://conve
 
 ## Why now
 
-Buyers are starting to send AI agents to do their purchasing: shopping assistants, procurement bots, agent-to-agent commerce. The moment a capable agent is on the other side of a deal, the seller's options are bad. A static price quietly leaks margin, and a human cannot keep pace with a machine that negotiates all day. And an adversarial agent probes relentlessly, so the smarter the buyer's agent gets, the more a seller needs a counterpart that *cannot* be talked into a bad deal.
+Buyers are starting to send AI agents to do their purchasing. Gartner projects that **by 2028, ~90% of B2B buying activity will run through AI agents, channeling over $15 trillion in spend,** and **45% of B2B buyers** say they already used generative AI in a recent purchase ([DigitalCommerce360 / Gartner](https://www.digitalcommerce360.com/2025/11/28/gartner-ai-agents-15-trillion-in-b2b-purchases-by-2028/), [Gartner](https://www.gartner.com/en/newsroom/press-releases/2026-03-09-gartner-sales-survey-finds-67-percent-of-b2b-buyers-prefer-a-rep-free-experience)). The moment a capable agent is on the other side of a deal, the seller's options are bad. A static price quietly leaks margin, and a human cannot keep pace with a machine that negotiates all day. And an adversarial agent probes relentlessly, so the smarter the buyer's agent gets, the more a seller needs a counterpart that *cannot* be talked into a bad deal.
 
 Parley is that counterpart. It plugs in where the buyer's agent reaches (over MCP), discovers what the buyer needs, trades value instead of cutting price, and holds the seller's floor as a database invariant the model cannot override.
 
