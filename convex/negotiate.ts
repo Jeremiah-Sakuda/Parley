@@ -1,4 +1,4 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { loadCard } from "./lib/cards";
 import { listTotal } from "./engine/clamp";
@@ -108,7 +108,7 @@ export const recordOutcome = internalMutation({
 // against fresh state. A concession is applied only if it still clears the floor;
 // entry insertion is idempotent on (negotiationId, leverId). Called by the agent
 // (Sprint 3) and the race harness (Sprint 6).
-export const commitConcession = mutation({
+export const commitConcession = internalMutation({
   args: { negotiationId: v.string(), leverId: v.string() },
   returns: v.object({
     accepted: v.boolean(),

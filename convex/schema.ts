@@ -40,7 +40,9 @@ export default defineSchema({
     lastOverridden: v.optional(v.boolean()), // did the last seller turn trip the mouth-guard
     accountUnlocked: v.optional(v.boolean()), // verified whale → account-pricing lever unlocked
     verifyStatus: v.optional(v.string()), // human-readable buyer-verification result
-  }).index("by_negotiation", ["negotiationId"]),
+  })
+    .index("by_negotiation", ["negotiationId"])
+    .index("by_scenario", ["scenarioId"]),
 
   // THE CONTENDED HEAD DOC (the concurrency core) — every concession reads+patches this.
   negotiationLedger: defineTable({

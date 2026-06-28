@@ -1,5 +1,5 @@
 import { query, mutation, internalMutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 const messageValidator = v.object({
@@ -40,7 +40,7 @@ export const sendBuyer = mutation({
       isProbe: false,
       confidence: 0,
     });
-    await ctx.scheduler.runAfter(0, api.agent.respond, {
+    await ctx.scheduler.runAfter(0, internal.agent.respond, {
       negotiationId,
       buyerText: text,
       scripted: scripted ?? false,

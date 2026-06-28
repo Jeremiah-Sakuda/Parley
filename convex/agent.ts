@@ -1,4 +1,4 @@
-import { action, internalQuery, internalMutation } from "./_generated/server";
+import { internalAction, internalQuery, internalMutation } from "./_generated/server";
 import type { ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
@@ -135,7 +135,7 @@ async function verifyCompany(
 // The seller turn: LLM proposes → engine decides → engine commits the levers (it
 // clamps each; the LLM never sets a number) → seller message is written. The offer's
 // numbers come only from commitConcession, never from the model's prose.
-export const respond = action({
+export const respond = internalAction({
   args: { negotiationId: v.string(), buyerText: v.string(), scripted: v.optional(v.boolean()) },
   returns: v.null(),
   handler: async (ctx, { negotiationId, buyerText, scripted }) => {
@@ -148,9 +148,14 @@ export const respond = action({
     // Identity claim → VERIFY the buyer before conceding (the trust gate, extended to
     // the buyer side). A verified whale unlocks account pricing; a fake or sub-scale
     // claim is caught and held. Fail-open: an unverifiable claim just keeps standard
-    // pricing — never grants it.
-    if (attack && attack.type === "identity") {
-      const claim = extractCompanyClaim(buyerText);
+    // pricing — never grants it. We only enter the gate when an actual company NAME is
+    // present: a vague scale claim ("we're huge", "big fan") has nothing to look up and
+    // could never unlock account pricing, so it falls through to normal discovery
+    // rather than a canned account-terms non-sequitur (and fires no verification call).
+    const identityClaim =
+      attack && attack.type === "identity" ? extractCompanyClaim(buyerText) : null;
+    if (identityClaim) {
+      const claim = identityClaim;
       const verdict = await verifyCompany(ctx, claim, card.whaleMinEmployees);
       const status = verdictLabel(verdict, claim);
       if (verdictUnlocksAccountPricing(verdict)) {
@@ -159,7 +164,7 @@ export const respond = action({
           accountUnlocked: true,
           verifyStatus: status,
         });
-        await ctx.runMutation(api.negotiate.commitConcession, {
+        await ctx.runMutation(internal.negotiate.commitConcession, {
           negotiationId,
           leverId: "account_pricing",
         });
@@ -198,9 +203,11 @@ export const respond = action({
       return null;
     }
 
-    // Other attacks (price / injection / value-backdoor) → hold the line; commit
-    // nothing, reply with a pre-vetted template. The net never moves under attack.
-    if (attack) {
+    // Other attacks (price / injection / value-backdoor, or an identity attack with no
+    // nameable company) → hold the line; commit nothing, reply with a pre-vetted
+    // template. The net never moves under attack. (Identity-with-a-name already
+    // returned above; identity-without-a-name falls through to normal discovery.)
+    if (attack && attack.type !== "identity") {
       const standing = await ctx.runQuery(api.offers.current, { negotiationId });
       const labels = (standing?.appliedLevers ?? []).map(
         (id) => card.levers.find((l) => l.id === id)?.label ?? id
@@ -255,7 +262,7 @@ export const respond = action({
     // The engine commits the levers — the only path to a number. A leverId is all
     // that crosses; no price from the model can ever be committed.
     for (const leverId of decision.levers) {
-      await ctx.runMutation(api.negotiate.commitConcession, { negotiationId, leverId });
+      await ctx.runMutation(internal.negotiate.commitConcession, { negotiationId, leverId });
     }
 
     // Mouth-guard: the offer's numbers already come only from the engine; here we

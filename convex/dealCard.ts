@@ -23,9 +23,10 @@ function patchPath<T>(obj: T, path: string, value: unknown): T {
 // the live card, so the meter re-solves on its own — this keeps the offer row and
 // negotiation.status consistent with it.
 async function resync(ctx: MutationCtx, scenarioId: string, card: DealCard) {
-  const negs = (await ctx.db.query("negotiation").collect()).filter(
-    (n) => n.scenarioId === scenarioId
-  );
+  const negs = await ctx.db
+    .query("negotiation")
+    .withIndex("by_scenario", (q) => q.eq("scenarioId", scenarioId))
+    .collect();
   for (const neg of negs) {
     const head = await ctx.db.get(neg.ledgerId);
     if (head) {

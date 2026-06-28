@@ -86,8 +86,9 @@ function RacePanel({ label, result }: { label: string; result: RaceResult | null
       </div>
       {result.mode === "guarded" && (
         <p className="race-caption">
-          Convex auto-retried the loser against fresh state; if retries are exhausted
-          the result is a safe counter. The floor is never breached.
+          Convex serialized the concurrent commits: the loser aborts and auto-retries
+          against the fresh head, where the clamp re-checks the floor. A concession that
+          no longer fits is rejected as a counter, so the floor is never breached.
         </p>
       )}
     </div>

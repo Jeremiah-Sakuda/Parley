@@ -13,15 +13,17 @@ Convex gives you three kinds of function, and the distinction is load-bearing fo
 | Convex primitive | Property | Parley uses it for |
 |---|---|---|
 | **`query`** | read-only, **reactive**, deterministic | `negotiate.liveState`, `offers.current`, `receipt.get`, `messages.list`, `pipeline.qualifyLeads` — everything the UI subscribes to |
-| **`mutation`** | the **only** thing that can write; runs as a **serializable ACID transaction**; no external I/O | `negotiate.commitConcession` (the floor commit), `dealCard.update`, `messages.sendBuyer` |
-| **`action`** | for side effects / the outside world; **cannot write the DB directly** | `agent.respond` (OpenAI), `verifyLive.lookup` (Orange Slice), `harness.runRace` |
+| **`mutation`** | the **only** thing that can write; runs as a **serializable ACID transaction**; no external I/O | `negotiate.commitConcession` (the floor commit — an **`internalMutation`**, only the agent action calls it), `dealCard.update`, `messages.sendBuyer` |
+| **`action`** | for side effects / the outside world; **cannot write the DB directly** | `agent.respond` (OpenAI — an **`internalAction`**, only the scheduler calls it), `verifyLive.lookup` (Orange Slice), `harness.runRace` |
 
 The key consequence: **the LLM lives in an `action`, and an action cannot write to the database.** To change anything it must call a `mutation`. Our commit mutation, `commitConcession`, takes only a `leverId` — never a price. So *"the LLM cannot commit a number"* isn't enforced by a prompt or a guard we hope holds; it's enforced by Convex's action/mutation boundary. There is no code path for a model-produced number to reach the offer.
 
+And the commit path is **closed, not just conventional**: `commitConcession` is an `internalMutation` and `agent.respond` is an `internalAction`, so there is no *public* API a client could call to commit a number or run the agent out of band. The only entry point is the public `messages.sendBuyer`, which inserts a buyer turn and schedules the internal agent.
+
 ```
-buyer turn → messages.sendBuyer (mutation) → schedules agent.respond (action)
+buyer turn → messages.sendBuyer (mutation) → schedules agent.respond (internal action)
   agent.respond: OpenAI proposes { leverIds, prose }   ← can talk to the world, cannot write
-    → commitConcession (mutation): clamps net ≥ floor, commits  ← only this can write a number
+    → commitConcession (internal mutation): clamps net ≥ floor, commits  ← only this can write a number
 ```
 
 ---
@@ -43,8 +45,8 @@ await ctx.db.patch(head._id, { appliedCostCents });   // PATCH the same head →
 
 Because every concession reads **and** patches the one `negotiationLedger` head doc, two concurrent concessions land in each other's read/write sets. Convex serializes them: one commits, the other gets an OCC conflict and is auto-retried against the updated head, where it re-checks the floor. **Write skew is structurally impossible** — not because Convex magically prevents all anomalies, but because *the invariant's state is the contended document.*
 
-- The immutable `concessionEntries` table is the **auditable source of truth**; `head.appliedCostCents` is a **denormalized running-sum cache** reconciled against it (`tests/ledger.test.ts` asserts the reconciliation, including after a forced retry).
-- **Fail-closed:** if retries were ever exhausted under pathological contention, the result is a safe counter — never a breach.
+- The immutable `concessionEntries` table is the **auditable source of truth**; `head.appliedCostCents` is a **denormalized running-sum cache** reconciled against it. `tests/ledger.test.ts` asserts the pure reconciliation math; `tests/convex_commit.test.ts` asserts it on the **real ledger head** after commits (`head.appliedCostCents === Σ entries`).
+- **Fail-closed by construction:** every OCC retry re-runs the clamp against the *fresh* head, so a concession that no longer fits is simply rejected as a counter — a breach is never committed. There is no separate "retries exhausted" handler; the floor check runs on every attempt, which is what makes it safe.
 
 ### We prove it live — the commit-safety A/B (`harness.runRace`)
 
@@ -54,6 +56,10 @@ The same engine, two commit strategies, run as real Convex transactions:
 - **GUARDED** reads-and-patches the one head → Convex's OCC serializes the concurrent commits and the clamp **holds** (net exactly $8,000).
 
 The opponent is concurrency, not a competitor — it's our own engine, two ways. Each mode runs on its own ledger key so the two can run in parallel with zero contamination.
+
+### Proven at the Convex layer (`convex-test`)
+
+Beyond the live panel, `tests/convex_commit.test.ts` runs `commitConcession`, the verify-gate unlock, and the naive-vs-guarded A/B as **real Convex transactions** (in-memory via `convex-test`): floor enforcement against a raised floor, lever idempotency, the `account_pricing` lock until verified, the reconciliation invariant on the actual head, and guarded-holds-vs-naive-breaches. These exercise the mutation, the contended head, the immutable ledger, and the offer doc — not a pure-engine stand-in. (`convex-test` runs the transaction model single-threaded, so it proves the commit *logic* and reconciliation; the live OCC retry under true parallelism is what `harness.runRace` shows on the deployed backend.)
 
 ### Defensible phrasing (and the traps to avoid)
 - ✅ "Enforced at Convex's **serializable** transaction boundary; write skew is structurally impossible because the floor-read and the competing write are the **same contended document.**"
@@ -74,7 +80,7 @@ The **"it's not hardcoded" control-panel demo** falls out of the same property: 
 
 ## 4. The scheduler runs the async agent turn
 
-`messages.sendBuyer` is a mutation that inserts the buyer's message and then `ctx.scheduler.runAfter(0, api.agent.respond, …)`. The seller's reply (LLM → engine → commit → message) runs as a scheduled action and appears reactively. The UI never calls the action directly — it sends a message and watches the transcript update.
+`messages.sendBuyer` is a mutation that inserts the buyer's message and then `ctx.scheduler.runAfter(0, internal.agent.respond, …)`. The seller's reply (LLM → engine → commit → message) runs as a scheduled internal action and appears reactively. The UI never calls the action directly — it sends a message and watches the transcript update.
 
 > Note: scheduled functions only run while a Convex backend is up — automatic on the cloud deployment; locally you keep `npx convex dev` running.
 
@@ -82,7 +88,7 @@ The **"it's not hardcoded" control-panel demo** falls out of the same property: 
 
 ## 5. Pure engine, one code path — Convex + Vitest run the same code
 
-The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our 63 tests therefore exercise the real commit path, not a stand-in. The Convex side is a thin transactional caller around a tested core.
+The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our **90 tests** exercise that core directly, and the `convex-test` suite (§2) exercises the Convex commit path on top of it — so both the engine math and the transactional wrapper are covered, not a stand-in.
 
 ---
 
@@ -107,13 +113,13 @@ Most of Parley runs in Convex's default (V8) runtime, which supports `fetch` —
 | `deals.activeCard` | query | the live (editable) deal card |
 | `dealCard.update` | mutation | control-panel edit (dot-path patch) → live re-solve |
 | `negotiate.liveState` | query | reactive net-value / status / verify status |
-| `negotiate.commitConcession` | mutation | **the floor commit** (contended head, OCC) |
+| `negotiate.commitConcession` | **internal** mutation | **the floor commit** (contended head, OCC) — no public caller |
 | `negotiate.recordOutcome` / `setVerify` | internal mutation | manipulation log + verify result |
 | `offers.current` / `list` | query | the standing offer (engine numbers only) |
 | `messages.list` | query | the transcript |
 | `messages.sendBuyer` | mutation | buyer turn → schedules the seller turn |
 | `messages.appendSeller` | internal mutation | seller turn writer |
-| `agent.respond` | action | LLM → engine → commit → message |
+| `agent.respond` | **internal** action | LLM → engine → commit → message (scheduler-only) |
 | `agent.context` / `cacheGet` / `cachePut` | internal | history + response cache |
 | `verifyLive.lookup` | **node action** | live Orange Slice company verification (fail-open) |
 | `pipeline.qualifyLeads` | query | top-of-funnel PURSUE/WATCH/SKIP (engine run forward) |
