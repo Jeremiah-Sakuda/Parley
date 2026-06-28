@@ -85,7 +85,9 @@ const reset = httpAction(async (ctx, request) => {
   }
   const negotiationId = body.negotiationId ?? "n1";
   await ctx.runMutation(api.seed.run, {});
-  await ctx.runMutation(api.seed.reset, { negotiationId, scenarioId: body.scenarioId ?? "deal-a" });
+  // Default to Deal B (deadline withheld) so the live buyer agent, which calls reset with no
+  // scenario, lands on the same scenario the UI defaults to (DEFAULT_SCENARIO_ID).
+  await ctx.runMutation(api.seed.reset, { negotiationId, scenarioId: body.scenarioId ?? "deal-b" });
   return json(await ctx.runQuery(api.negotiate.liveState, { negotiationId }));
 });
 
