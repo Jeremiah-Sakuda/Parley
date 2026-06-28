@@ -1,11 +1,13 @@
 import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import { LIST_TOTAL, FLOOR, CONCESSION, K } from "./harnessOps";
 
-// STUB (Sprint 0): fixture race results. Real impl (Sprint 6, gated) runs the
-// deterministic concurrent-concession driver: the NAIVE commit (reads a stale
-// cached scalar, writes a different doc) breaches the floor; the GUARDED commit
-// (reads+patches the contended ledger head) holds. Honest commit-safety A/B of our
-// OWN engine — never a competitor race.
+// The commit-safety A/B (the Technical-Complexity flex): two implementations of the
+// SAME engine's commit, run as REAL Convex transactions on a dedicated harness ledger.
+// NAIVE (stale cache + write a different doc) breaches the floor; GUARDED (read+patch
+// the one contended head) holds it. The "opponent" is concurrency, not a competitor —
+// this is our own engine, two ways.
 export const runRace = action({
   args: {
     negotiationId: v.string(),
@@ -19,10 +21,36 @@ export const runRace = action({
     conflicts: v.number(),
     attempts: v.number(),
   }),
-  handler: async (_ctx, args) => {
-    if (args.mode === "naive") {
-      return { mode: "naive", finalNetCents: 772000, floorCents: 800000, breached: true, conflicts: 0, attempts: 6 };
-    }
-    return { mode: "guarded", finalNetCents: 800000, floorCents: 800000, breached: false, conflicts: 4, attempts: 10 };
+  handler: async (
+    ctx,
+    { mode }
+  ): Promise<{
+    mode: string;
+    finalNetCents: number;
+    floorCents: number;
+    breached: boolean;
+    conflicts: number;
+    attempts: number;
+  }> => {
+    const ledgerId = await ctx.runMutation(internal.harnessOps.reset, {});
+    // Fire K concessions CONCURRENTLY at the one ledger.
+    const results = await Promise.all(
+      Array.from({ length: K }, () =>
+        mode === "naive"
+          ? ctx.runMutation(internal.harnessOps.naiveCommit, { ledgerId, costCents: CONCESSION })
+          : ctx.runMutation(internal.harnessOps.guardedCommit, { ledgerId, costCents: CONCESSION })
+      )
+    );
+    const accepted = results.filter(Boolean).length;
+    const appliedCostCents = await ctx.runQuery(internal.harnessOps.tally, {});
+    const finalNetCents = LIST_TOTAL - appliedCostCents;
+    return {
+      mode,
+      finalNetCents,
+      floorCents: FLOOR,
+      breached: finalNetCents < FLOOR,
+      conflicts: K - accepted, // concessions the contended head rejected (0 for naive)
+      attempts: K,
+    };
   },
 });
