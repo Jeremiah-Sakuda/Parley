@@ -27,7 +27,7 @@ Buying is being handed to AI agents — and when an agent is on the other side o
 - **Reactive everything** — the live net-value number, offer, and receipt move with zero polling.
 - **Fail-safe by design** — a server-side mouth-guard, a deterministic fallback on API timeout, and a zero-network scripted mode.
 - **Agent-ready** — a buyer AI agent can plug in over **MCP / Convex HTTP endpoints** and negotiate, and *still* can't be talked below the floor. See **[`docs/MCP.md`](docs/MCP.md)**.
-- **94 tests** — the pure economics engine, the Convex commit path (`convex-test`), the agent HTTP surface, and a red-team battery — the *same code* the production mutation runs.
+- **96 tests** — the pure economics engine, the Convex commit path (`convex-test`), the agent HTTP surface, and a red-team battery — the *same code* the production mutation runs.
 
 ## Agent-ready (MCP)
 
@@ -104,6 +104,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and sprint plan
 
 - **[How we used Convex](docs/CONVEX.md)** — the serializable floor, the action/mutation safety boundary, reactivity, the scheduler, the commit-safety A/B.
 - **[Agent-ready (MCP + HTTP)](docs/MCP.md)** — the buyer-side agent surface and why an agent reaching in still can't breach the floor.
+- **[Breach audit](docs/BREACH_AUDIT.md)** — eight structural breach vectors (all SAFE) plus the 64-way concurrency proof that the floor holds under real OCC contention.
 - **[Technical talking points](docs/TALKING_POINTS.md)** — defensible claims for the demo + judge Q&A.
 - **[Build roadmap & frozen contract](docs/ROADMAP.md)** — the full plan and the API contract.
 - **[Deploy guide](docs/DEPLOY.md)** — Vercel + Convex.

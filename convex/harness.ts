@@ -12,6 +12,9 @@ export const runRace = action({
   args: {
     negotiationId: v.string(),
     mode: v.union(v.literal("naive"), v.literal("guarded")),
+    // Number of concurrent concessions to fire. Defaults to K; raise it (up to 64) to
+    // stress real OCC contention on the deployed backend (the panel's "N-client race").
+    k: v.optional(v.number()),
   },
   returns: v.object({
     mode: v.string(),
@@ -23,7 +26,7 @@ export const runRace = action({
   }),
   handler: async (
     ctx,
-    { mode }
+    { mode, k }
   ): Promise<{
     mode: string;
     finalNetCents: number;
@@ -32,13 +35,15 @@ export const runRace = action({
     rejected: number;
     attempts: number;
   }> => {
+    const count = Math.min(Math.max(Math.trunc(k ?? K), 1), 64);
     // Each mode runs on its OWN ledger key, so naive + guarded can run in parallel
     // (as the panel does) without contaminating each other's tally.
     const key = `__harness_${mode}__`;
     const ledgerId = await ctx.runMutation(internal.harnessOps.reset, { key });
-    // Fire K concessions CONCURRENTLY at this mode's ledger.
+    // Fire `count` concessions CONCURRENTLY at this mode's ledger. They contend on the one
+    // head; on the deployed backend Convex's serializable OCC aborts + retries the losers.
     const results = await Promise.all(
-      Array.from({ length: K }, () =>
+      Array.from({ length: count }, () =>
         mode === "naive"
           ? ctx.runMutation(internal.harnessOps.naiveCommit, { ledgerId, key, costCents: CONCESSION })
           : ctx.runMutation(internal.harnessOps.guardedCommit, { ledgerId, key, costCents: CONCESSION })
@@ -54,10 +59,10 @@ export const runRace = action({
       breached: finalNetCents < FLOOR,
       // Concessions the floor clamp rejected (0 for naive, which never re-checks the
       // updated head). This counts floor-rejections, not OCC aborts; the real OCC retry
-      // happens live when these K mutations contend on the one head on the deployed
-      // backend (convex-test runs single-threaded, so it can't surface aborts).
-      rejected: K - accepted,
-      attempts: K,
+      // happens live when these mutations contend on the one head on the deployed backend
+      // (convex-test runs single-threaded, so it can't surface aborts).
+      rejected: count - accepted,
+      attempts: count,
     };
   },
 });

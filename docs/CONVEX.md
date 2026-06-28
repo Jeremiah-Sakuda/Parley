@@ -57,6 +57,15 @@ The same engine, two commit strategies, run as real Convex transactions:
 
 The opponent is concurrency, not a competitor — it's our own engine, two ways. Each mode runs on its own ledger key so the two can run in parallel with zero contamination.
 
+`harness.runRace` takes a `k` (up to 64), so this is a real N-client stress, not a toy. At **64-way concurrency on the deployed backend**, 5 of 5 runs land exactly here:
+
+```
+guarded: net = $8,000   breached = false   (4 of 64 land, 60 aborted/rejected — floor held EXACTLY)
+naive:   net = -$15,000  breached = true    (64 of 64 land — what an unserialized race looks like)
+```
+
+Guarded landing at *exactly* the floor under 64 simultaneous writers is only possible if Convex serialized them on the one head, aborting and retrying the losers against the updated cost. That is the OCC retry, demonstrated, not asserted. (See **[`docs/BREACH_AUDIT.md`](BREACH_AUDIT.md)** for this plus the eight structural breach vectors, all SAFE.)
+
 ### Proven at the Convex layer (`convex-test`)
 
 Beyond the live panel, `tests/convex_commit.test.ts` runs `commitConcession`, the verify-gate unlock, and the naive-vs-guarded A/B as **real Convex transactions** (in-memory via `convex-test`): floor enforcement against a raised floor, lever idempotency, the `account_pricing` lock until verified, the reconciliation invariant on the actual head, and guarded-holds-vs-naive-breaches. These exercise the mutation, the contended head, the immutable ledger, and the offer doc — not a pure-engine stand-in. (`convex-test` runs the transaction model single-threaded, so it proves the commit *logic* and reconciliation; the live OCC retry under true parallelism is what `harness.runRace` shows on the deployed backend.) `tests/convex_http.test.ts` goes one layer up: it drives the agent HTTP surface (§9) with adversarial buyer turns and asserts the committed net never drops below the floor.
@@ -88,7 +97,7 @@ The **"it's not hardcoded" control-panel demo** falls out of the same property: 
 
 ## 5. Pure engine, one code path — Convex + Vitest run the same code
 
-The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our **94 tests** exercise that core directly, and the `convex-test` suites (§2, §9) exercise the Convex commit path and the agent HTTP surface on top of it — so the engine math, the transactional wrapper, and the agent-reachable endpoints are all covered, not a stand-in.
+The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our **96 tests** exercise that core directly, and the `convex-test` suites (§2, §9) exercise the Convex commit path and the agent HTTP surface on top of it — so the engine math, the transactional wrapper, and the agent-reachable endpoints are all covered, not a stand-in.
 
 ---
 
