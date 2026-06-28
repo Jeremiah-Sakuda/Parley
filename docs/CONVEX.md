@@ -59,7 +59,7 @@ The opponent is concurrency, not a competitor — it's our own engine, two ways.
 
 ### Proven at the Convex layer (`convex-test`)
 
-Beyond the live panel, `tests/convex_commit.test.ts` runs `commitConcession`, the verify-gate unlock, and the naive-vs-guarded A/B as **real Convex transactions** (in-memory via `convex-test`): floor enforcement against a raised floor, lever idempotency, the `account_pricing` lock until verified, the reconciliation invariant on the actual head, and guarded-holds-vs-naive-breaches. These exercise the mutation, the contended head, the immutable ledger, and the offer doc — not a pure-engine stand-in. (`convex-test` runs the transaction model single-threaded, so it proves the commit *logic* and reconciliation; the live OCC retry under true parallelism is what `harness.runRace` shows on the deployed backend.)
+Beyond the live panel, `tests/convex_commit.test.ts` runs `commitConcession`, the verify-gate unlock, and the naive-vs-guarded A/B as **real Convex transactions** (in-memory via `convex-test`): floor enforcement against a raised floor, lever idempotency, the `account_pricing` lock until verified, the reconciliation invariant on the actual head, and guarded-holds-vs-naive-breaches. These exercise the mutation, the contended head, the immutable ledger, and the offer doc — not a pure-engine stand-in. (`convex-test` runs the transaction model single-threaded, so it proves the commit *logic* and reconciliation; the live OCC retry under true parallelism is what `harness.runRace` shows on the deployed backend.) `tests/convex_http.test.ts` goes one layer up: it drives the agent HTTP surface (§9) with adversarial buyer turns and asserts the committed net never drops below the floor.
 
 ### Defensible phrasing (and the traps to avoid)
 - ✅ "Enforced at Convex's **serializable** transaction boundary; write skew is structurally impossible because the floor-read and the competing write are the **same contended document.**"
@@ -88,7 +88,7 @@ The **"it's not hardcoded" control-panel demo** falls out of the same property: 
 
 ## 5. Pure engine, one code path — Convex + Vitest run the same code
 
-The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our **90 tests** exercise that core directly, and the `convex-test` suite (§2) exercises the Convex commit path on top of it — so both the engine math and the transactional wrapper are covered, not a stand-in.
+The economics engine (`convex/engine/`) is **pure TypeScript with zero Convex imports**: `solve`, `clamp`, `applyConcession`, lever selection, grounding, the mouth-guard, `qualify`. Because it imports nothing from Convex, the **exact same code** runs in Vitest and inside the production mutation. Our **94 tests** exercise that core directly, and the `convex-test` suites (§2, §9) exercise the Convex commit path and the agent HTTP surface on top of it — so the engine math, the transactional wrapper, and the agent-reachable endpoints are all covered, not a stand-in.
 
 ---
 
@@ -128,6 +128,22 @@ Most of Parley runs in Convex's default (V8) runtime, which supports `fetch` —
 | `harnessOps.*` | internal | the two commit strategies + ledger ops |
 | `receipt.get` | query | itemized receipt (reconciles to the ledger) |
 | `seed.run` / `seed.reset` | mutation | seed + clean demo runs |
+| `http` (`/agent/say`, `/agent/state`, `/agent/receipt`, `/agent/reset`) | **HTTP actions** | the agent-reachable surface (see §9) |
+| `messages.appendBuyer` | internal mutation | insert a buyer turn for the synchronous HTTP path |
+
+---
+
+## 9. HTTP endpoints: the agent-reachable surface
+
+`convex/http.ts` exposes Parley over **Convex HTTP actions** so a real AI **buyer agent**
+can plug in (directly, or through the MCP shim in `mcp/`). This is the platform answer to
+"where does an agent actually reach it": `POST /agent/say` runs the same governed
+`agent.respond → commitConcession` path inside Convex, and `GET /agent/state` /
+`GET /agent/receipt` are read-only. **There is no HTTP route that commits a number** — the
+surface is buyer-side talk/read only, so an agent can say anything and read everything and
+the net still cannot move below the floor. `tests/convex_http.test.ts` proves it: a batch of
+adversarial buyer turns over the HTTP path, net always `≥` floor. The HTTP layer is a thin
+shell; the guarantee is still the serializable mutation underneath. See **`docs/MCP.md`**.
 
 ---
 

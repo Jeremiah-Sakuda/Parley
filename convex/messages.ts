@@ -49,6 +49,25 @@ export const sendBuyer = mutation({
   },
 });
 
+// Internal: insert a buyer turn WITHOUT scheduling a reply. The reactive UI path uses
+// sendBuyer (insert + schedule); the synchronous agent HTTP surface (convex/http.ts)
+// uses this + a direct agent.respond call so it can return the seller reply in one
+// request. Buyer-side only: it can speak, never commit a number.
+export const appendBuyer = internalMutation({
+  args: { negotiationId: v.string(), text: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { negotiationId, text }) => {
+    await ctx.db.insert("messages", {
+      negotiationId,
+      role: "buyer",
+      text,
+      isProbe: false,
+      confidence: 0,
+    });
+    return null;
+  },
+});
+
 // Internal: only the agent action writes seller turns (with the probe flag +
 // constraint confidence that drive the UI's probe tag / confidence strip).
 export const appendSeller = internalMutation({

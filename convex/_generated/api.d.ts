@@ -26,6 +26,7 @@ import type * as engine_safeTemplates from "../engine/safeTemplates.js";
 import type * as engine_types from "../engine/types.js";
 import type * as harness from "../harness.js";
 import type * as harnessOps from "../harnessOps.js";
+import type * as http from "../http.js";
 import type * as lib_cards from "../lib/cards.js";
 import type * as messages from "../messages.js";
 import type * as negotiate from "../negotiate.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   "engine/types": typeof engine_types;
   harness: typeof harness;
   harnessOps: typeof harnessOps;
+  http: typeof http;
   "lib/cards": typeof lib_cards;
   messages: typeof messages;
   negotiate: typeof negotiate;

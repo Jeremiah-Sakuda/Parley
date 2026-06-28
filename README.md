@@ -26,7 +26,17 @@ Buying is being handed to AI agents — and when an agent is on the other side o
 - **Write-skew-immune floor** enforced at Convex's serializable transaction boundary — see **[`docs/CONVEX.md`](docs/CONVEX.md)**.
 - **Reactive everything** — the live net-value number, offer, and receipt move with zero polling.
 - **Fail-safe by design** — a server-side mouth-guard, a deterministic fallback on API timeout, and a zero-network scripted mode.
-- **63 tests** over the pure economics engine — the *same code* the production mutation runs.
+- **Agent-ready** — a buyer AI agent can plug in over **MCP / Convex HTTP endpoints** and negotiate, and *still* can't be talked below the floor. See **[`docs/MCP.md`](docs/MCP.md)**.
+- **94 tests** — the pure economics engine, the Convex commit path (`convex-test`), the agent HTTP surface, and a red-team battery — the *same code* the production mutation runs.
+
+## Agent-ready (MCP)
+
+When the buyer is an AI agent, it plugs into Parley over MCP (a thin shim in [`mcp/`](mcp/)) backed by Convex HTTP endpoints ([`convex/http.ts`](convex/http.ts)). The tools are buyer-side only — `parley_say`, `parley_state`, `parley_receipt` — with **no commit tool**: an agent can say anything and read everything, and the net still can't move below the floor.
+
+```bash
+npx convex dev                                              # serves the endpoints on :3211
+PARLEY_BASE_URL=http://127.0.0.1:3211 node mcp/agent-demo.mjs   # a scripted buyer agent negotiating + failing to break the floor
+```
 
 ## Quick start
 
@@ -89,6 +99,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and sprint plan
 ## Docs
 
 - **[How we used Convex](docs/CONVEX.md)** — the serializable floor, the action/mutation safety boundary, reactivity, the scheduler, the commit-safety A/B.
+- **[Agent-ready (MCP + HTTP)](docs/MCP.md)** — the buyer-side agent surface and why an agent reaching in still can't breach the floor.
 - **[Technical talking points](docs/TALKING_POINTS.md)** — defensible claims for the demo + judge Q&A.
 - **[Build roadmap & frozen contract](docs/ROADMAP.md)** — the full plan and the API contract.
 - **[Deploy guide](docs/DEPLOY.md)** — Vercel + Convex.
