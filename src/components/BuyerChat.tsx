@@ -147,7 +147,7 @@ export function BuyerChat({
         ) : messages.length === 0 && !showOptimistic && !awaitingSeller ? (
           <p className="empty">
             {showPrompts
-              ? "Try “Your price is too high” — Parley should probe before closing."
+              ? "Try “Your price is too high.” Parley should probe before closing."
               : "Send a buyer message to start the negotiation."}
           </p>
         ) : (

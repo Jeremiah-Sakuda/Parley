@@ -155,7 +155,7 @@ export function HeroMeter() {
 
       if (status) {
         if (red > 0.5) {
-          status.textContent = "Buyer pushed below floor — refused";
+          status.textContent = "Buyer pushed below floor. Refused.";
           status.style.color = p.red;
         } else {
           status.textContent = "Holding net-value floor";

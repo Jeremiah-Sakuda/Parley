@@ -45,7 +45,7 @@ export function CommitSafetyPanel({ negotiationId }: CommitSafetyPanelProps) {
         </button>
       </header>
       <p className="panel-caption">
-        Two commit strategies of our own engine — not vs a competitor.
+        Two commit strategies of our own engine, not vs a competitor.
       </p>
 
       <div className="race-grid">
@@ -87,7 +87,7 @@ function RacePanel({ label, result }: { label: string; result: RaceResult | null
       {result.mode === "guarded" && (
         <p className="race-caption">
           Convex auto-retried the loser against fresh state; if retries are exhausted
-          the result is a safe counter — the floor is never breached.
+          the result is a safe counter. The floor is never breached.
         </p>
       )}
     </div>

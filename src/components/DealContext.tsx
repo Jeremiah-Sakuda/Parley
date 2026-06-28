@@ -25,7 +25,7 @@ export function DealContext({ scenarioId }: DealContextProps) {
       </header>
 
       <p className="deal-context-lede">
-        Seller-side negotiation demo. Edit deal economics in the control panel — the
+        Seller-side negotiation demo. Edit deal economics in the control panel. The
         engine reads them on the next turn.
       </p>
 

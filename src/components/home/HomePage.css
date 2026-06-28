@@ -452,6 +452,35 @@
   border-left: 1px solid var(--border);
 }
 
+.home-stat-source {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--fainter);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  width: fit-content;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.home-stat-source:hover {
+  color: var(--muted);
+  border-bottom-color: var(--border);
+}
+
+.home-close-stat {
+  margin-top: 18px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.home-close-stat .home-stat-source {
+  display: inline;
+  margin-top: 0;
+  margin-left: 10px;
+}
+
 /* How it works cards */
 .home-split-cards {
   display: grid;

@@ -115,7 +115,7 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
                 <span className="home-em">Keep the margin.</span>
               </h1>
               <p className="home-lede" data-reveal data-reveal-delay="0.16">
-                Parley is an AI sales agent that negotiates on your behalf — it trades
+                Parley is an AI sales agent that negotiates on your behalf. It trades
                 value instead of discounts, and it physically can&apos;t be talked below
                 your floor.
               </p>
@@ -143,29 +143,45 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
             </h2>
             <div className="home-two-col">
               <p data-reveal data-reveal-delay="0.16">
-                Buyers increasingly send agents to the table — patient, tireless,
+                Buyers increasingly send agents to the table: patient, tireless,
                 optimized to extract every basis point. They probe, anchor, and wait
                 you out long after a human would have caved.
               </p>
               <p data-reveal data-reveal-delay="0.16">
                 The seller shows up with a static price that quietly bleeds margin, or
                 a rep who can&apos;t match the pace. The sell-side of agentic commerce
-                is simply unbuilt — until now.
+                is simply unbuilt. Until now.
               </p>
             </div>
             <div className="home-stat-row" data-reveal data-reveal-delay="0.24">
               <div className="home-stat-cell">
                 <span>
-                  <span className="mono home-em">~1%</span> realized price{" "}
+                  <span className="mono home-em">~1%</span> better price{" "}
                   <span className="home-faint">≈</span>{" "}
-                  <span className="mono home-em">~8%</span> operating profit
+                  <span className="mono home-em">~8%</span> more operating profit
                 </span>
+                <a
+                  className="home-stat-source"
+                  href="https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-power-of-pricing"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  McKinsey, <em>The Power of Pricing</em>
+                </a>
               </div>
               <div className="home-stat-cell">
                 <span>
-                  <span className="mono home-em">85%</span> of B2B teams say their
-                  pricing needs work
+                  <span className="mono home-em">90%</span> of B2B purchases run
+                  through AI agents by <span className="mono home-em">2028</span>
                 </span>
+                <a
+                  className="home-stat-source"
+                  href="https://www.digitalcommerce360.com/2025/11/28/gartner-ai-agents-15-trillion-in-b2b-purchases-by-2028/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Gartner, 2025
+                </a>
               </div>
             </div>
           </div>
@@ -180,7 +196,7 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
             </h2>
             <p className="home-sublede" data-reveal data-reveal-delay="0.16">
               A language model handles the conversation. A deterministic engine owns
-              every number — and has the final say.
+              every number, and has the final say.
             </p>
 
             <div className="home-split-cards">
@@ -197,13 +213,13 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
                     Acme will match at 12% off. Can you get to $7,500?
                   </div>
                   <div className="home-chat-line seller">
-                    I&apos;ll hold the price — but I&apos;ll fold in onboarding and
+                    I&apos;ll hold the price, but I&apos;ll fold in onboarding and
                     priority support at this tier. That&apos;s worth more to your team
                     than 12% off, and it ships today.
                   </div>
                   <div className="home-chat-line buyer">…and free shipping on top?</div>
                   <div className="home-chat-line seller">
-                    Shipping&apos;s already included. I can&apos;t go lower — but
+                    Shipping&apos;s already included. I can&apos;t go lower, but
                     we&apos;re done. Let&apos;s close.
                   </div>
                 </div>
@@ -255,7 +271,7 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
               </div>
               <div className="home-principle">
                 <span className="mono home-em">02</span>
-                <p>Holds a net-value floor — enforced in code, not the prompt.</p>
+                <p>Holds a net-value floor, enforced in code, not the prompt.</p>
               </div>
               <div className="home-principle">
                 <span className="mono home-em">03</span>
@@ -275,7 +291,7 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
                   Don&apos;t take our word for it. Try to talk it below its floor.
                 </h2>
                 <p className="home-sublede" data-reveal data-reveal-delay="0.08">
-                  The floor lives in code, not the prompt — so it holds against price
+                  The floor lives in code, not the prompt, so it holds against price
                   pressure, free-shipping back-doors, and outright manipulation. Go
                   ahead and push.
                 </p>
@@ -305,7 +321,7 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
                   <div className="home-chat-line seller left">
                     $6,500 sits below the net-value floor, so I can&apos;t take it.
                     What I can do is add onboarding so the value lands where you need
-                    it — without cutting price.
+                    it, without cutting price.
                   </div>
                   <div className="home-floor-held">
                     <span className="home-floor-held-dot" aria-hidden />
@@ -328,6 +344,18 @@ export function HomePage({ onOpenDemo }: HomePageProps) {
               Every point of <span className="home-em">margin you keep</span> is a
               point of CAC you get to spend.
             </h2>
+            <p className="home-close-stat" data-reveal data-reveal-delay="0.06">
+              A <span className="mono home-em">1%</span> gain in price realization
+              lifts operating profit <span className="mono home-em">6&ndash;7%</span>.
+              <a
+                className="home-stat-source"
+                href="https://arminkakas.medium.com/a-b2b-walkthrough-for-customer-value-based-pricing-5fdb49447188"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Revology Analytics, 2025
+              </a>
+            </p>
             <div data-reveal data-reveal-delay="0.08">
               <button type="button" className="home-btn-primary home-btn-lg" onClick={onOpenDemo}>
                 Try to break it

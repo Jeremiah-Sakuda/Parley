@@ -4,8 +4,8 @@ export const PIPELINE_SCENARIO_ID = "deal-a";
 export const GITHUB_URL = "https://github.com/Jeremiah-Sakuda/Parley";
 
 export const SCENARIOS = [
-  { id: "deal-a", label: "Deal A — deadline stated" },
-  { id: "deal-b", label: "Deal B — deadline withheld" },
+  { id: "deal-a", label: "Deal A: deadline stated" },
+  { id: "deal-b", label: "Deal B: deadline withheld" },
 ] as const;
 
 /** Deal B discovery demo — quick prompts for judges / video beats */

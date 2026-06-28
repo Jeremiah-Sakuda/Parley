@@ -17,8 +17,8 @@ export function MouthGuardBadge({ negotiationId }: MouthGuardBadgeProps) {
       className={`mouth-guard-badge ${overridden ? "overridden" : "armed"}`}
       title={
         overridden
-          ? "LLM prose replaced with safe template — engine numbers unchanged"
-          : "Watching seller text — engine commits all numbers"
+          ? "LLM prose replaced with safe template. Engine numbers unchanged."
+          : "Watching seller text. Engine commits all numbers."
       }
     >
       <span className={`mouth-guard-dot${overridden ? " overridden" : ""}`} aria-hidden />

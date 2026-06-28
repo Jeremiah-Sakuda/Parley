@@ -52,7 +52,7 @@ export function DealPipelinePanel({
         <div>
           <h2>Deal pipeline</h2>
           <p className="panel-caption inline-caption">
-            Same engine, one step up the funnel — only open deals that clear your floor.
+            Same engine, one step up the funnel. Only open deals that clear your floor.
           </p>
         </div>
         <span className="mono-label">Engine qualifies · model estimates</span>

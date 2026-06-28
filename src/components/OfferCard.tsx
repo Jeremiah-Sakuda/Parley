@@ -45,7 +45,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
         </header>
         <p className="empty">Waiting for the engine to commit an offer…</p>
         <p className="offer-caption">
-          Only numbers written by the engine appear here — never parsed from chat.
+          Only numbers written by the engine appear here, never parsed from chat.
         </p>
       </section>
     );

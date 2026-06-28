@@ -77,7 +77,7 @@ export default function App() {
             </button>
           </nav>
           {scripted && (
-            <span className="scripted-mode-badge" title="Deterministic turns — no OpenAI calls">
+            <span className="scripted-mode-badge" title="Deterministic turns with no OpenAI calls">
               Scripted mode
             </span>
           )}
@@ -139,7 +139,7 @@ export default function App() {
 
       <footer className="app-footer">
         <p>
-          The LLM can talk, but it cannot commit — only the economics engine can
+          The LLM can talk, but it cannot commit. Only the economics engine can
           commit an offer.
         </p>
       </footer>
