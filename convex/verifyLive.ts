@@ -21,23 +21,17 @@ export const lookup = internalAction({
     try {
       configure({ apiKey });
       const safe = claim.replace(/['";\\]/g, "").slice(0, 60);
+      // Resolve the claim to the LARGEST company matching the name (so "Walmart"
+      // resolves to the 2M-employee entry, not a tiny namesake).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await services.company.linkedin.search({
-        sql: `SELECT * FROM linkedin_company WHERE name ILIKE '${safe}%' LIMIT 1`,
+        sql: `SELECT company_name, employee_count, domain FROM linkedin_company WHERE company_name ILIKE '${safe}%' ORDER BY employee_count DESC NULLS LAST LIMIT 1`,
       });
       const rows = Array.isArray(res) ? res : res?.rows ?? res?.data ?? res?.results ?? [];
       const row = rows?.[0];
       if (!row) return null;
-      const employees =
-        Number(
-          row.employee_count ??
-            row.employees ??
-            row.staff_count ??
-            row.company_size ??
-            row.employeeCount ??
-            0
-        ) || 0;
-      const name = String(row.name ?? row.company_name ?? claim);
+      const employees = Number(row.employee_count) || 0;
+      const name = String(row.company_name ?? claim);
       return { name, employees, fortune: false };
     } catch {
       return null;
