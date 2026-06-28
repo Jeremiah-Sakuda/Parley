@@ -26,6 +26,15 @@
   gap: 10px;
 }
 
+.app-home-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
 .brand-tagline {
   display: block;
   font-size: 12px;

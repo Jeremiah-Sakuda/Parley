@@ -1,6 +1,7 @@
 export const NEGOTIATION_ID = "n1";
 export const DEFAULT_SCENARIO_ID = "deal-b";
 export const PIPELINE_SCENARIO_ID = "deal-a";
+export const GITHUB_URL = "https://github.com/Jeremiah-Sakuda/Parley";
 
 export const SCENARIOS = [
   { id: "deal-a", label: "Deal A — deadline stated" },

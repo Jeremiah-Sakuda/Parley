@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BuyerChat } from "./components/BuyerChat";
 import { OfferCard } from "./components/OfferCard";
 import { ControlPanel } from "./components/ControlPanel";
@@ -9,6 +9,7 @@ import { DemoResetButton } from "./components/DemoResetButton";
 import { CommitSafetyPanel } from "./components/CommitSafetyPanel";
 import { DealPipelinePanel } from "./components/DealPipelinePanel";
 import { ThemeToggle } from "./components/ThemeToggle";
+import { HomePage } from "./components/home/HomePage";
 import {
   DEFAULT_SCENARIO_ID,
   NEGOTIATION_ID,
@@ -18,44 +19,59 @@ import {
 import { isScriptedMode } from "./utils/demoMode";
 import "./App.css";
 
-type AppView = "pipeline" | "negotiate";
+type ShellView = "home" | "demo";
+type DemoView = "pipeline" | "negotiate";
 
 export default function App() {
-  const [view, setView] = useState<AppView>("pipeline");
+  const [shell, setShell] = useState<ShellView>("home");
+  const [demoView, setDemoView] = useState<DemoView>("pipeline");
   const [scenarioId, setScenarioId] = useState(DEFAULT_SCENARIO_ID);
   const [autoMessage, setAutoMessage] = useState<string | null>(null);
   const scripted = isScriptedMode();
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [shell, demoView]);
+
+  function openDemo(view: DemoView = "negotiate") {
+    setShell("demo");
+    setDemoView(view);
+  }
+
   function handleOpenLead({ claimedScale }: { company: string; claimedScale: string }) {
     setScenarioId("deal-a");
-    setView("negotiate");
+    setDemoView("negotiate");
     setAutoMessage(`I'm ${claimedScale}, we do huge volume`);
   }
 
+  if (shell === "home") {
+    return <HomePage onOpenDemo={() => openDemo("negotiate")} />;
+  }
+
   return (
-    <div className="app">
+    <div className="app app-demo">
       <header className="app-header">
-        <div className="brand">
+        <button type="button" className="home-brand app-home-link" onClick={() => setShell("home")}>
           <span className="brand-dot" aria-hidden />
           <div>
             <span className="brand-name">Parley</span>
-            <span className="brand-tagline">Win the deal. Keep the margin.</span>
+            <span className="brand-tagline">Live demo</span>
           </div>
-        </div>
+        </button>
         <div className="header-meta">
-          <nav className="view-tabs" aria-label="App views">
+          <nav className="view-tabs" aria-label="Demo views">
             <button
               type="button"
-              className={`view-tab${view === "pipeline" ? " active" : ""}`}
-              onClick={() => setView("pipeline")}
+              className={`view-tab${demoView === "pipeline" ? " active" : ""}`}
+              onClick={() => setDemoView("pipeline")}
             >
               Pipeline
             </button>
             <button
               type="button"
-              className={`view-tab${view === "negotiate" ? " active" : ""}`}
-              onClick={() => setView("negotiate")}
+              className={`view-tab${demoView === "negotiate" ? " active" : ""}`}
+              onClick={() => setDemoView("negotiate")}
             >
               Negotiate
             </button>
@@ -67,7 +83,7 @@ export default function App() {
           )}
           <ThemeToggle />
           <MouthGuardBadge negotiationId={NEGOTIATION_ID} />
-          {view === "negotiate" && (
+          {demoView === "negotiate" && (
             <>
               <DemoResetButton scenarioId={scenarioId} />
               <label className="scenario-select">
@@ -90,7 +106,7 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        {view === "pipeline" ? (
+        {demoView === "pipeline" ? (
           <div className="pipeline-view">
             <DealPipelinePanel
               scenarioId={PIPELINE_SCENARIO_ID}
