@@ -33,6 +33,37 @@ export interface LLMProposal {
   draftMessage: string;
 }
 
+export interface Lever {
+  id: string;
+  label: string;
+  costCents: number;
+  constraintTag: ConstraintTag;
+  maxUses: number;
+  locked: boolean; // e.g. account_pricing starts locked until the buyer is verified
+}
+
+export interface Fact {
+  subject: string;
+  predicate: string;
+  value: string;
+}
+
+// The seller's configured deal — the floor, the lever menu, the facts. This is the
+// thing the control panel edits live; the engine treats it as read-only config.
+export interface DealCard {
+  scenarioId: string;
+  label: string;
+  units: number;
+  listPriceCents: number; // per-unit list price, cents
+  floorCents: number; // NET floor for the whole order, cents
+  levers: Lever[];
+  facts: Fact[];
+  forbiddenCommitments: string[];
+  competitor: { pricePerUnitCents: number; shipDays: number };
+  buyerDeadlineDays: number | null; // null = WITHHELD (Deal B)
+  whaleMinEmployees: number;
+}
+
 // What the engine returns. The engine DISPOSES — it owns the floor, the numbers,
 // and what may be committed.
 export interface EngineApproval {

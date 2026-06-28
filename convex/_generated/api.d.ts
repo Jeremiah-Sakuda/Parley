@@ -11,6 +11,11 @@
 import type * as agent from "../agent.js";
 import type * as dealCard from "../dealCard.js";
 import type * as deals from "../deals.js";
+import type * as engine_clamp from "../engine/clamp.js";
+import type * as engine_fixtures from "../engine/fixtures.js";
+import type * as engine_grounding from "../engine/grounding.js";
+import type * as engine_index from "../engine/index.js";
+import type * as engine_levers from "../engine/levers.js";
 import type * as engine_types from "../engine/types.js";
 import type * as harness from "../harness.js";
 import type * as messages from "../messages.js";
@@ -28,6 +33,11 @@ declare const fullApi: ApiFromModules<{
   agent: typeof agent;
   dealCard: typeof dealCard;
   deals: typeof deals;
+  "engine/clamp": typeof engine_clamp;
+  "engine/fixtures": typeof engine_fixtures;
+  "engine/grounding": typeof engine_grounding;
+  "engine/index": typeof engine_index;
+  "engine/levers": typeof engine_levers;
   "engine/types": typeof engine_types;
   harness: typeof harness;
   messages: typeof messages;
