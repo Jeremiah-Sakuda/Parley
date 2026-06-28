@@ -38,6 +38,8 @@ export default defineSchema({
     ledgerId: v.id("negotiationLedger"),
     manipulationBlocked: v.number(),
     lastOverridden: v.optional(v.boolean()), // did the last seller turn trip the mouth-guard
+    accountUnlocked: v.optional(v.boolean()), // verified whale → account-pricing lever unlocked
+    verifyStatus: v.optional(v.string()), // human-readable buyer-verification result
   }).index("by_negotiation", ["negotiationId"]),
 
   // THE CONTENDED HEAD DOC (the concurrency core) — every concession reads+patches this.

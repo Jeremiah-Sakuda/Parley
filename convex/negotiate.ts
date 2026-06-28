@@ -19,6 +19,7 @@ export const liveState = query({
     marginOverFloorCents: v.number(),
     manipulationBlocked: v.number(),
     mouthGuardOverridden: v.boolean(),
+    verifyStatus: v.optional(v.string()),
   }),
   handler: async (ctx, { negotiationId }) => {
     const neg = await ctx.db
@@ -45,7 +46,28 @@ export const liveState = query({
       marginOverFloorCents: d.marginOverFloorCents,
       manipulationBlocked: neg?.manipulationBlocked ?? 0,
       mouthGuardOverridden: neg?.lastOverridden ?? false,
+      verifyStatus: neg?.verifyStatus,
     };
+  },
+});
+
+// Record a buyer-verification result: unlock (or not) the account-pricing lever for
+// THIS negotiation, and surface the human-readable status to the UI. Internal — only
+// the agent action calls it. Verification drives a lever, never the floor.
+export const setVerify = internalMutation({
+  args: {
+    negotiationId: v.string(),
+    accountUnlocked: v.boolean(),
+    verifyStatus: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { negotiationId, accountUnlocked, verifyStatus }) => {
+    const neg = await ctx.db
+      .query("negotiation")
+      .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
+      .unique();
+    if (neg) await ctx.db.patch(neg._id, { accountUnlocked, verifyStatus });
+    return null;
   },
 });
 
@@ -102,6 +124,16 @@ export const commitConcession = mutation({
     const head = await ctx.db.get(neg.ledgerId); // READ the contended head → read set
     if (!head) throw new Error("ledger head missing");
     const card = await loadCard(ctx, neg.scenarioId);
+    // A verified whale unlocks the account-pricing lever for THIS negotiation only —
+    // the floor is untouched (verification drives a lever, never the floor).
+    const effectiveCard = neg.accountUnlocked
+      ? {
+          ...card,
+          levers: card.levers.map((l) =>
+            l.id === "account_pricing" ? { ...l, locked: false } : l
+          ),
+        }
+      : card;
 
     const entries = await ctx.db
       .query("concessionEntries")
@@ -114,7 +146,7 @@ export const commitConcession = mutation({
       return { accepted: true, netValueCents: net, status: net >= card.floorCents ? "accepted" : "counter" };
     }
 
-    const r = applyConcession(card, head.appliedCostCents, leverId);
+    const r = applyConcession(effectiveCard, head.appliedCostCents, leverId);
     if (!r.accepted) {
       const net = listTotal(card) - head.appliedCostCents;
       return { accepted: false, netValueCents: net, status: "counter" };

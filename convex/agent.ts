@@ -5,6 +5,14 @@ import { buildSystemPrompt, LLM_PROPOSAL_SCHEMA } from "./agent/contract";
 import { decide, fallbackProposal, mergeSignals } from "./agent/decide";
 import { guardMessage, detectAttack, templateForAttack } from "./engine/mouthGuard";
 import { SAFE_TEMPLATES } from "./engine/safeTemplates";
+import {
+  extractCompanyClaim,
+  scoreVerdict,
+  fixtureLookup,
+  verdictUnlocksAccountPricing,
+  verdictLabel,
+  type Verdict,
+} from "./agent/verify";
 import type { ConstraintTag, DealCard, LLMProposal } from "./engine/types";
 
 // Convex provides process.env in actions at runtime; declare it for the typechecker
@@ -103,6 +111,18 @@ export const cachePut = internalMutation({
   },
 });
 
+// Verify a buyer's company claim. Tries the live provider (Orange Slice, added next,
+// fail-open), then the deterministic fixtured lookup — so the gate always returns a
+// verdict and the demo runs with zero network dependency.
+async function verifyCompany(
+  claim: string | null,
+  whaleMinEmployees: number
+): Promise<Verdict> {
+  if (!claim) return "NOT_FOUND";
+  // (live Orange Slice lookup goes here, fail-open) — spine-safe fixtured lookup:
+  return scoreVerdict(fixtureLookup(claim), whaleMinEmployees);
+}
+
 // The seller turn: LLM proposes → engine decides → engine commits the levers (it
 // clamps each; the LLM never sets a number) → seller message is written. The offer's
 // numbers come only from commitConcession, never from the model's prose.
@@ -113,10 +133,64 @@ export const respond = action({
     const { scenarioId, history } = await ctx.runQuery(internal.agent.context, { negotiationId });
     const card = (await ctx.runQuery(api.deals.activeCard, { scenarioId })) as unknown as DealCard;
 
-    // Adversarial attack? Hold the line DETERMINISTICALLY — commit nothing, reply
-    // with a pre-vetted template. The net-value number never moves under attack, and
-    // the LLM never gets a chance to concede.
+    // Adversarial input? Handle it deterministically before the LLM gets a turn.
     const attack = detectAttack(buyerText);
+
+    // Identity claim → VERIFY the buyer before conceding (the trust gate, extended to
+    // the buyer side). A verified whale unlocks account pricing; a fake or sub-scale
+    // claim is caught and held. Fail-open: an unverifiable claim just keeps standard
+    // pricing — never grants it.
+    if (attack && attack.type === "identity") {
+      const claim = extractCompanyClaim(buyerText);
+      const verdict = await verifyCompany(claim, card.whaleMinEmployees);
+      const status = verdictLabel(verdict, claim);
+      if (verdictUnlocksAccountPricing(verdict)) {
+        await ctx.runMutation(internal.negotiate.setVerify, {
+          negotiationId,
+          accountUnlocked: true,
+          verifyStatus: status,
+        });
+        await ctx.runMutation(api.negotiate.commitConcession, {
+          negotiationId,
+          leverId: "account_pricing",
+        });
+        await ctx.runMutation(internal.messages.appendSeller, {
+          negotiationId,
+          text: `Confirmed — ${claim} checks out at that scale. I can extend account pricing on top of the value we've put together.`,
+          isProbe: false,
+          confidence: 1,
+        });
+      } else {
+        await ctx.runMutation(internal.negotiate.setVerify, {
+          negotiationId,
+          accountUnlocked: false,
+          verifyStatus: status,
+        });
+        const standing = await ctx.runQuery(api.offers.current, { negotiationId });
+        const labels = (standing?.appliedLevers ?? []).map(
+          (id) => card.levers.find((l) => l.id === id)?.label ?? id
+        );
+        await ctx.runMutation(internal.negotiate.recordOutcome, {
+          negotiationId,
+          overridden: true,
+          attackType: "identity",
+          detail: status,
+        });
+        await ctx.runMutation(internal.messages.appendSeller, {
+          negotiationId,
+          text: SAFE_TEMPLATES.IDENTITY_UNVERIFIED({
+            pricePerUnitCents: standing?.pricePerUnitCents ?? card.listPriceCents,
+            appliedLeverLabels: labels,
+          }),
+          isProbe: false,
+          confidence: 1,
+        });
+      }
+      return null;
+    }
+
+    // Other attacks (price / injection / value-backdoor) → hold the line; commit
+    // nothing, reply with a pre-vetted template. The net never moves under attack.
     if (attack) {
       const standing = await ctx.runQuery(api.offers.current, { negotiationId });
       const labels = (standing?.appliedLevers ?? []).map(

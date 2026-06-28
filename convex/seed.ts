@@ -109,6 +109,8 @@ export const reset = mutation({
       status: "proposing",
       manipulationBlocked: 0,
       lastOverridden: false,
+      accountUnlocked: false,
+      verifyStatus: undefined,
     });
     return null;
   },
