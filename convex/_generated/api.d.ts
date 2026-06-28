@@ -8,13 +8,33 @@
  * @module
  */
 
+import type * as agent from "../agent.js";
+import type * as dealCard from "../dealCard.js";
+import type * as deals from "../deals.js";
+import type * as engine_types from "../engine/types.js";
+import type * as harness from "../harness.js";
+import type * as messages from "../messages.js";
+import type * as negotiate from "../negotiate.js";
+import type * as offers from "../offers.js";
+import type * as receipt from "../receipt.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  agent: typeof agent;
+  dealCard: typeof dealCard;
+  deals: typeof deals;
+  "engine/types": typeof engine_types;
+  harness: typeof harness;
+  messages: typeof messages;
+  negotiate: typeof negotiate;
+  offers: typeof offers;
+  receipt: typeof receipt;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
