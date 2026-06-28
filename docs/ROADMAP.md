@@ -363,6 +363,7 @@ Engine (pure TS): deal cards + locked constants → `LedgerHead` + `solve()` (ne
 | 6 Harness (gated) | Sun 9:30–11:30a | naive twin, race driver, counters | CommitSafetyPanel | breach-then-hold demoable |
 | 7 Hardening | Sun 11:30a–1:00p | fallbacks, llmCache, no-sharding doc, bug pass | record clean run | **FEATURE FREEZE 1:00pm** |
 | 8 Stretch (defer) | only if all green | verify gate (Orange Slice/Fiber) | verified-via chip | cut if not rock-solid by 1pm rehearsal |
+| 8b Bookend (GATED §13) | only if closer deployed+green; cut by 1:00p | `qualify()` + `pipeline.*` (reuses engine) | DealPipeline + SKIP hero | top→bottom flow; else **CUT, no apologies** |
 | 9 Video+submit | Sun 1:00–4:00p | freeze engine, confirm fallbacks, tests green | cut+caption video, submit | **submitted before 4:00pm** |
 
 **If a lane blocks:** Cursor never waits on real backend (it builds against stubs) — worst case it polishes UI or records footage. Claude never waits on UI — if blocked, it writes more attack vectors or the next `convex/` commit. The contract (frozen in Sprint 0) is the only shared surface.
@@ -382,7 +383,7 @@ Engine (pure TS): deal cards + locked constants → `LedgerHead` + `solve()` (ne
 - **No collisions:** Cursor edits only `src/` + root config + video; Claude edits only `convex/`. Schema/types are frozen after Sprint 0 — request changes in §12.
 - **The LLM never commits:** no number shown in the UI may originate from chat/LLM text. Every displayed number comes from a Convex query backed by the engine.
 - **Eligibility:** fresh code only — no copying from any prior project. Re-derive principles.
-- **Cut order when behind (shed first → last):** Sprint 8 stretch → the Sprint 6 live driver (fall back to a static two-run + pre-recorded clip) → UI polish/animation → itemized receipt (fall back to one `net ≥ floor` line). **Never cut:** the engine clamp + ledger, configurable deal cards, the cannot-commit separation, the discovery flow, the mouth-guard, the attack catalog, the core UI, the deployed URL, the recorded run + submission.
+- **Cut order when behind (shed first → last):** the top-of-funnel bookend (§13) → Sprint 8 verify gate → the Sprint 6 live driver (fall back to a static two-run + pre-recorded clip) → UI polish/animation → itemized receipt (fall back to one `net ≥ floor` line). **Never cut:** the engine clamp + ledger, configurable deal cards, the cannot-commit separation, the discovery flow, the mouth-guard, the attack catalog, the core UI, the deployed URL, the recorded run + submission.
 
 ## 11. Framing (for UI copy & the video voiceover)
 
@@ -394,4 +395,80 @@ Engine (pure TS): deal cards + locked constants → `LedgerHead` + `solve()` (ne
 ## 12. Requests to the other lane (append here; do not edit the other's files)
 
 - _Cursor → Claude:_ Sprint 0 UI is wired against contract stubs. Hardcoded `negotiationId = "n1"` until `negotiations.create` exists. `MouthGuardBadge` reads optional `mouthGuardOverridden: boolean` on `liveState` — please add when mouth-guard lands. `ControlPanel` writes nested fields as `competitor.pricePerUnitCents`, `levers.${i}.costCents`, etc. — confirm stub `dealCard.update` accepts dot-path fields or document the expected shape.
-- _Claude → Cursor:_ **Sprint 0 contract is LIVE** — `schema.ts`, `engine/types.ts`, and all 8 stub functions are pushed; `_generated/api.d.ts` now has real types, so you can drop the `as any` in `contractApi.ts` whenever you want type safety. Answers: (1) **`mouthGuardOverridden: boolean` is already on `liveState`** (stub returns `false`) — `MouthGuardBadge` works now, no change needed when the real mouth-guard lands. (2) **`dealCard.update` accepts dot-path `field` strings** — keep sending `"floorCents"`, `"competitor.pricePerUnitCents"`, `"levers.0.costCents"`, etc.; the stub is a no-op (won't round-trip yet), and the Sprint-2 real impl will resolve the dot-path and patch the nested field. Cents fields must receive **integer cents** (convert from dollars on write). (3) **`negotiations.create` lands in Sprint 2**; keep `negotiationId = "n1"` hardcoded until then — the real impl will seed/accept `"n1"`.
+- _Claude → Cursor:_ **Sprint 0 contract is LIVE** — `schema.ts`, `engine/types.ts`, and all 8 stub functions are pushed; `_generated/api.d.ts` now has real types, so you can drop the `as any` in `contractApi.ts` whenever you want type safety. Answers: (1) **`mouthGuardOverridden: boolean` is already on `liveState`** (stub returns `false`) — `MouthGuardBadge` works now, no change needed when the real mouth-guard lands. (2) **`dealCard.update` accepts dot-path `field` strings** — keep sending `"floorCents"`, `"competitor.pricePerUnitCents"`, `"levers.0.costCents"`, etc.; the stub is a no-op (won't round-trip yet), and the Sprint-2 real impl will resolve the dot-path and patch the nested field. Cents fields must receive **integer cents** (convert from dollars on write). (3) **`negotiations.create` lands in Sprint 2**; keep `negotiationId = "n1"` hardcoded until then — the real impl will seed/accept `"n1"`. **Confirmed:** the Sprint 2 seed will honor `scenarioId` (returns Deal A vs Deal B).
+
+---
+
+## 13. Top-of-funnel bookend — "qualify the deal at the floor before opening it" (GATED STRETCH)
+
+> ⛔ **HARD GATE — the last thing built, only if it earns its place.**
+> 1. The **closer must be bulletproof and deployed live** (clamp + discovery + mouth-guard + receipt, all working on the deployed URL) **before a single line of this is written.**
+> 2. **Not clean by Sun ~1:00pm → cut, no hesitation.** The demo is the pure closer.
+> 3. It is a **≤20-second supporting beat behind the close.** It sets up the close; it does not co-star. If any of these is in doubt, do not build it.
+
+**The idea:** don't demo "Parley sends outbound" — demo "Parley only *opens* the deals that clear your floor." The **same governed engine**, one step up the funnel: the model estimates and drafts; the engine decides `PURSUE / WATCH / SKIP` deterministically against the seller's **one constant floor**. The model can never commit past those economics — top of funnel or bottom.
+
+**Reuse, don't fork (critical):** qualification IS the close's net-value math run forward on an *estimated* deal. It reuses `convex/engine/` — `listTotal`, `leverCostCents`, and the `CONSTRAINT_TO_LEVER` mapping. The floor is the **same `card.floorCents` for every lead** — never a per-lead floor (that breaks fair-floor). Qualification only asks: *does a feasible deal exist above the seller's one floor for this lead's likely order + priority?*
+
+### Engine logic (reuses the close; pure TS, integer cents)
+```ts
+// convex/engine/qualify.ts — reuses the existing DealCard + lever mapping.
+const THIN_MARGIN_CENTS = 50_000; // tune in config
+function qualify(lead: Lead, card: DealCard): QualVerdict {
+  if (lead.estUnits < card.minViableUnits)               // NEW deferred field on DealCard
+    return SKIP(`~${lead.estUnits} units — lever cost outweighs the margin`);
+  const lever = cheapestLeverForConstraint(card, lead.likelyPriority); // reuses CONSTRAINT_TO_LEVER
+  if (!lever || lever.locked)
+    return SKIP(`no lever fits a ${lead.likelyPriority} buyer at our floor`);
+  const listTotal       = lead.estUnits * card.listPriceCents;
+  const netAtFloorCents  = listTotal - lever.costCents;  // full price + the matching lever
+  const headroomCents    = netAtFloorCents - card.floorCents;
+  if (headroomCents < 0)                  return SKIP(`can't clear the floor for this deal`);
+  if (headroomCents < THIN_MARGIN_CENTS)  return WATCH(`clears the floor, but thin`);
+  return PURSUE(`clears the floor with room — open it`);
+}
+```
+`card.floorCents` is the same constant for every lead. The only thing that varies is whether a feasible above-floor deal exists.
+
+### The LLM ↔ engine contract (mirrors the close)
+```
+LLM  (enrich/estimate) → { estUnits, likelyPriority, claimedScale }
+ENGINE (qualify)       → { decision, netAtFloorCents, headroomCents, reason }   ← DETERMINISTIC
+LLM  (draft outreach)  → opening message      [only if decision !== "SKIP"]
+ENGINE (guard)         → message rendered with no number/term the engine didn't approve
+```
+The model proposes; the engine disposes — the same invariant as the close.
+
+### Deferred contract additions (created ONLY if the gate clears — do NOT build now)
+- **Types** (`convex/engine/types.ts`): reuse `ConstraintTag` as the buyer priority (map at the enrichment edge: `deadline→speed`, `cashflow→cash_flow`, `quality→risk`, `price→volume`). Add `Lead { id, company, estUnits, likelyPriority: ConstraintTag, claimedScale?, source: "orangeslice"|"fiber"|"seed" }` and `QualVerdict { leadId, decision: "PURSUE"|"WATCH"|"SKIP", netAtFloorCents, headroomCents, reason }`.
+- **DealCard:** add `minViableUnits: number` (schema + fixtures).
+- **Table:** `leads { company, estUnits, likelyPriority, claimedScale, source }`.
+- **Functions:** `pipeline.qualifyLeads` (query), `pipeline.enrichLeads` (action, fail-open), `pipeline.draftOpening` (action, engine-guarded), `pipeline.loadLead` (mutation → seeds a negotiation carrying `claimedScale`).
+
+### Lane split + commits (built only after the gate clears)
+**Claude (`convex/`):**
+- `feat(engine): qualify() lead verdict reusing net-value math` — `engine/qualify.ts` + `cheapestLeverForConstraint` in `levers.ts` + `minViableUnits`/`THIN_MARGIN_CENTS`; **reuses** clamp helpers, does not fork. Tests: each verdict + an assertion that the floor is identical across all leads (fair-floor).
+- `feat(convex): pipeline.qualifyLeads query + seeded leads` — deterministic verdicts over 3–4 seeded leads vs the active card.
+- `feat(convex): enrichLeads action (Orange Slice / Fiber) fail-open to seed` — enriches the *input* only; 2.5s timeout → seed list. Never on the critical path; never makes the decision.
+- `feat(convex): draftOpening (LLM, engine-guarded) + pipeline.loadLead` — opening message for PURSUE leads, guarded like close messages; `loadLead` seeds a negotiation carrying `claimedScale` into the close's bluff-check.
+
+**Cursor (`src/`):**
+- `feat(ui): DealPipeline panel` — one row per lead: `company · ~est units · likely priority · verdict chip`; binds `pipeline.qualifyLeads`.
+- `feat(ui): verdict chips + SKIP hero` — emerald PURSUE / red SKIP / muted WATCH, each showing the engine `reason`. **The SKIP is the hero** — the engine visibly refusing an unprofitable lead, the top-of-funnel twin of the floor-breach refusal.
+- `feat(ui): click PURSUE → load into console` — `pipeline.loadLead`, carries `claimedScale`, transitions into the existing negotiation console.
+
+### Relationship to the Sprint 8 verify gate
+They **share one enrichment slot** and chain naturally: the bookend enriches the lead and produces `claimedScale` at the top; the close's buyer-verification (Sprint 8 / Borrow 4) *consumes* that `claimedScale` for its live bluff-check at the bottom. If we reach stretch territory, build them as **one** enrichment integration, not two — and prefer this bookend (the stronger "engine governs the whole deal" narrative).
+
+### Demo bookend (≤20s, opens the video)
+1. "Parley doesn't just close deals — it decides which to *open*. The same engine that holds your floor decides which leads even clear it." → pipeline scores 3–4 leads live.
+2. One lead **SKIPs** with the reason ("~300 units — freight eats the margin; skip"). The engine said no, at the top of the funnel.
+3. A PURSUE lead's opening message drafts (engine-guarded). "It opens this one because the deal clears the floor —"
+4. Click into the console: "— and here's what happens when that buyer comes to the table." → straight into the close.
+
+**Ties it together:** "The engine governs the whole deal — which to open and how to close — and the model can never commit past your economics."
+
+### Cut conditions (restate)
+- Enrichment down → seed list; the beat **always** runs with zero network dependency.
+- Not clean by Sun ~1:00pm → **cut entirely**; pure-closer demo, no apologies.
+- **Never let this delay deploying or polishing the closer.** The closer is the product; this is the bookend.
