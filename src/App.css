@@ -820,6 +820,17 @@
   font-weight: 600;
 }
 
+.scripted-mode-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+}
+
 /* Commit safety */
 .commit-safety-panel .panel-header button {
   background: transparent;

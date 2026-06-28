@@ -16,13 +16,14 @@ interface ChatMessage {
 interface BuyerChatProps {
   negotiationId: string;
   scenarioId: string;
+  scripted?: boolean;
 }
 
 function messageKey(msg: ChatMessage, i: number): string {
   return `${i}-${msg.role}-${msg.text.slice(0, 32)}`;
 }
 
-export function BuyerChat({ negotiationId, scenarioId }: BuyerChatProps) {
+export function BuyerChat({ negotiationId, scenarioId, scripted = false }: BuyerChatProps) {
   const serverMessages = useQuery(api.messages.list, { negotiationId });
   const live = useQuery(api.negotiate.liveState, { negotiationId });
   const sendBuyer = useMutation(api.messages.sendBuyer);
@@ -80,7 +81,11 @@ export function BuyerChat({ negotiationId, scenarioId }: BuyerChatProps) {
     setSending(true);
     setAwaitingSeller(true);
     try {
-      await sendBuyer({ negotiationId, text: trimmed });
+      await sendBuyer({
+        negotiationId,
+        text: trimmed,
+        ...(scripted ? { scripted: true } : {}),
+      });
     } finally {
       setSending(false);
     }
@@ -116,7 +121,9 @@ export function BuyerChat({ negotiationId, scenarioId }: BuyerChatProps) {
             )}
           </div>
         </div>
-        <span className="mono-label">LLM · cannot commit</span>
+        <span className="mono-label">
+          {scripted ? "Scripted · zero network" : "LLM · cannot commit"}
+        </span>
       </header>
 
       <div className="chat-messages" ref={scrollRef}>

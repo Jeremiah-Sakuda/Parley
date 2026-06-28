@@ -60,4 +60,5 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and sprint plan
 - **NetValueMeter** — hero net value + floor headroom bar
 - **ReceiptCard** — itemized audit trail
 - **MouthGuardBadge** — armed / overridden status
-- **CommitSafetyPanel** — gated concurrency A/B demo (Sprint 6)
+- **CommitSafetyPanel** — commit-safety A/B (naive vs guarded ledger commit)
+- **Scripted mode** — append `?mode=scripted` for zero-network deterministic recording

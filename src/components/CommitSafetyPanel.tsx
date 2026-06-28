@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAction } from "convex/react";
-import { contractApi } from "../lib/contractApi";
+import { api } from "../../convex/_generated/api";
 import { formatCents } from "../utils/money";
 
 interface CommitSafetyPanelProps {
@@ -17,7 +17,7 @@ type RaceResult = {
 };
 
 export function CommitSafetyPanel({ negotiationId }: CommitSafetyPanelProps) {
-  const runRace = useAction(contractApi.harness.runRace);
+  const runRace = useAction(api.harness.runRace);
   const [naive, setNaive] = useState<RaceResult | null>(null);
   const [guarded, setGuarded] = useState<RaceResult | null>(null);
   const [running, setRunning] = useState(false);

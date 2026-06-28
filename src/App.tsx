@@ -6,11 +6,14 @@ import { NetValueMeter } from "./components/NetValueMeter";
 import { ReceiptCard } from "./components/ReceiptCard";
 import { MouthGuardBadge } from "./components/MouthGuardBadge";
 import { DemoResetButton } from "./components/DemoResetButton";
+import { CommitSafetyPanel } from "./components/CommitSafetyPanel";
 import { DEFAULT_SCENARIO_ID, NEGOTIATION_ID, SCENARIOS } from "./constants";
+import { isScriptedMode } from "./utils/demoMode";
 import "./App.css";
 
 export default function App() {
   const [scenarioId, setScenarioId] = useState(DEFAULT_SCENARIO_ID);
+  const scripted = isScriptedMode();
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
 
   return (
@@ -24,6 +27,11 @@ export default function App() {
           </div>
         </div>
         <div className="header-meta">
+          {scripted && (
+            <span className="scripted-mode-badge" title="Deterministic turns — no OpenAI calls">
+              Scripted mode
+            </span>
+          )}
           <MouthGuardBadge negotiationId={NEGOTIATION_ID} />
           <DemoResetButton scenarioId={scenarioId} />
           <label className="scenario-select">
@@ -45,7 +53,11 @@ export default function App() {
 
       <main className="app-main">
         <div className="column column-left">
-          <BuyerChat negotiationId={NEGOTIATION_ID} scenarioId={scenarioId} />
+          <BuyerChat
+            negotiationId={NEGOTIATION_ID}
+            scenarioId={scenarioId}
+            scripted={scripted}
+          />
           <OfferCard negotiationId={NEGOTIATION_ID} />
         </div>
 
@@ -53,6 +65,7 @@ export default function App() {
           <NetValueMeter negotiationId={NEGOTIATION_ID} />
           <ControlPanel scenarioId={scenarioId} />
           <ReceiptCard negotiationId={NEGOTIATION_ID} />
+          <CommitSafetyPanel negotiationId={NEGOTIATION_ID} />
         </div>
       </main>
 
