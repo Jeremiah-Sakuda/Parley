@@ -10,6 +10,7 @@ interface OfferCardProps {
 
 export function OfferCard({ negotiationId }: OfferCardProps) {
   const offer = useQuery(api.offers.current, { negotiationId });
+  const live = useQuery(api.negotiate.liveState, { negotiationId });
   const prevNet = useRef<number | null>(null);
   const [flash, setFlash] = useState(false);
 
@@ -50,7 +51,8 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
     );
   }
 
-  const leverChips = offer.appliedLevers.map(leverLabel);
+  const verifyStatus = live?.verifyStatus;
+  const isVerified = verifyStatus?.startsWith("verified:");
 
   return (
     <section className={`panel offer-card${flash ? " offer-card-flash" : ""}`}>
@@ -58,6 +60,15 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
         <h2>Engine offer</h2>
         <span className={`status-badge status-${offer.status}`}>{offer.status}</span>
       </header>
+
+      {verifyStatus && (
+        <div
+          className={`verify-chip${isVerified ? " verified" : " checked"}`}
+          title="Buyer identity verification result"
+        >
+          {verifyStatus}
+        </div>
+      )}
 
       <div className="offer-grid">
         <div className="offer-row">
@@ -71,10 +82,13 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
         <div className="offer-row">
           <span className="label">Applied levers</span>
           <div className="lever-chips">
-            {leverChips.length > 0 ? (
-              leverChips.map((label) => (
-                <span key={label} className="chip">
-                  {label}
+            {offer.appliedLevers.length > 0 ? (
+              offer.appliedLevers.map((id) => (
+                <span
+                  key={id}
+                  className={`chip${id === "account_pricing" ? " chip-unlocked" : ""}`}
+                >
+                  {leverLabel(id)}
                 </span>
               ))
             ) : (

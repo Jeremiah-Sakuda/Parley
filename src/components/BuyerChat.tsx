@@ -17,13 +17,21 @@ interface BuyerChatProps {
   negotiationId: string;
   scenarioId: string;
   scripted?: boolean;
+  autoMessage?: string | null;
+  onAutoMessageSent?: () => void;
 }
 
 function messageKey(msg: ChatMessage, i: number): string {
   return `${i}-${msg.role}-${msg.text.slice(0, 32)}`;
 }
 
-export function BuyerChat({ negotiationId, scenarioId, scripted = false }: BuyerChatProps) {
+export function BuyerChat({
+  negotiationId,
+  scenarioId,
+  scripted = false,
+  autoMessage = null,
+  onAutoMessageSent,
+}: BuyerChatProps) {
   const serverMessages = useQuery(api.messages.list, { negotiationId });
   const live = useQuery(api.negotiate.liveState, { negotiationId });
   const sendBuyer = useMutation(api.messages.sendBuyer);
@@ -33,6 +41,7 @@ export function BuyerChat({ negotiationId, scenarioId, scripted = false }: Buyer
   const [optimisticBuyer, setOptimisticBuyer] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevCount = useRef(0);
+  const autoSentRef = useRef<string | null>(null);
 
   const peakConfidence = useMemo(() => {
     if (!serverMessages?.length) return 0;
@@ -90,6 +99,12 @@ export function BuyerChat({ negotiationId, scenarioId, scripted = false }: Buyer
       setSending(false);
     }
   }
+
+  useEffect(() => {
+    if (!autoMessage || autoSentRef.current === autoMessage) return;
+    autoSentRef.current = autoMessage;
+    void submitMessage(autoMessage).then(() => onAutoMessageSent?.());
+  }, [autoMessage]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

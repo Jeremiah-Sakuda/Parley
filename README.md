@@ -61,4 +61,5 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and sprint plan
 - **ReceiptCard** — itemized audit trail
 - **MouthGuardBadge** — armed / overridden status
 - **CommitSafetyPanel** — commit-safety A/B (naive vs guarded ledger commit)
+- **DealPipelinePanel** — engine-qualified leads (PURSUE / WATCH / SKIP)
 - **Scripted mode** — append `?mode=scripted` for zero-network deterministic recording

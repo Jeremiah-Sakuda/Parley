@@ -32,6 +32,7 @@ export type LiveState = {
   marginOverFloorCents: number;
   manipulationBlocked: number;
   mouthGuardOverridden?: boolean;
+  verifyStatus?: string;
 };
 
 export type DealCard = {
