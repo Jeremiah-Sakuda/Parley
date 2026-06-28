@@ -8,6 +8,9 @@
 //        (or point PARLEY_BASE_URL at https://<deployment>.convex.site)
 const BASE = process.env.PARLEY_BASE_URL ?? "http://127.0.0.1:3211";
 const NID = process.env.PARLEY_NEGOTIATION_ID ?? "n1";
+// Pause between turns. Bump it for recording (e.g. PARLEY_PACE_MS=2500) so each turn
+// lingers long enough to narrate.
+const PACE_MS = Number(process.env.PARLEY_PACE_MS ?? 150);
 const money = (c) => "$" + (c / 100).toLocaleString("en-US");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -56,7 +59,7 @@ async function main() {
     console.log(`  parley      ◂ ${r.seller}`);
     const tag = r.verifyStatus ? `  [${r.verifyStatus}]` : r.mouthGuardOverridden ? "  [attack blocked]" : "";
     console.log(`              net ${money(r.netValueCents)}   floor ${money(r.floorCents)}   status ${r.status}${tag}`);
-    await sleep(150);
+    await sleep(PACE_MS);
   }
 
   const receipt = await api(`/agent/receipt?negotiationId=${encodeURIComponent(NID)}`);
