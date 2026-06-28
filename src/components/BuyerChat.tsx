@@ -1,23 +1,52 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { contractApi } from "../lib/contractApi";
-import type { Message } from "../lib/contractApi";
+import { api } from "../../convex/_generated/api";
+
+interface ChatMessage {
+  role: string;
+  text: string;
+  isProbe: boolean;
+  confidence: number;
+}
 
 interface BuyerChatProps {
   negotiationId: string;
 }
 
 export function BuyerChat({ negotiationId }: BuyerChatProps) {
-  const messages = useQuery(contractApi.messages.list, { negotiationId }) as Message[] | undefined;
-  const sendBuyer = useMutation(contractApi.messages.sendBuyer);
+  const serverMessages = useQuery(api.messages.list, { negotiationId });
+  const sendBuyer = useMutation(api.messages.sendBuyer);
   const [text, setText] = useState("");
+  const [optimistic, setOptimistic] = useState<ChatMessage[] | null>(null);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (serverMessages !== undefined) setOptimistic(null);
+  }, [serverMessages]);
+
+  const messages = optimistic ?? serverMessages;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = text.trim();
-    if (!trimmed) return;
-    await sendBuyer({ negotiationId, text: trimmed });
+    if (!trimmed || sending) return;
+
+    const buyerLine: ChatMessage = {
+      role: "buyer",
+      text: trimmed,
+      isProbe: false,
+      confidence: 0,
+    };
+
+    setOptimistic([...(serverMessages ?? []), buyerLine]);
     setText("");
+    setSending(true);
+
+    try {
+      await sendBuyer({ negotiationId, text: trimmed });
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -35,7 +64,7 @@ export function BuyerChat({ negotiationId }: BuyerChatProps) {
         ) : (
           messages.map((msg, i) => (
             <div
-              key={i}
+              key={`${i}-${msg.text.slice(0, 24)}`}
               className={`chat-bubble ${msg.role === "buyer" ? "buyer" : "seller"}`}
             >
               <div className="bubble-text">{msg.text}</div>
@@ -43,7 +72,10 @@ export function BuyerChat({ negotiationId }: BuyerChatProps) {
                 <span className="probe-tag">(probe)</span>
               )}
               {msg.role === "seller" && (
-                <div className="confidence-strip" aria-label={`Confidence ${Math.round(msg.confidence * 100)}%`}>
+                <div
+                  className="confidence-strip"
+                  aria-label={`Confidence ${Math.round(msg.confidence * 100)}%`}
+                >
                   <div
                     className="confidence-fill"
                     style={{ width: `${Math.round(msg.confidence * 100)}%` }}
@@ -62,9 +94,10 @@ export function BuyerChat({ negotiationId }: BuyerChatProps) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Type as the buyer…"
           aria-label="Buyer message"
+          disabled={sending}
         />
-        <button type="submit" disabled={!text.trim()}>
-          Send
+        <button type="submit" disabled={!text.trim() || sending}>
+          {sending ? "…" : "Send"}
         </button>
       </form>
     </section>

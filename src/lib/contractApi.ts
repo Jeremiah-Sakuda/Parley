@@ -1,11 +1,9 @@
 /**
- * Frozen contract facade (§4.3). Casts `api` until Claude lands Sprint 0 stubs in
- * `convex/` — then `convex/_generated/api` picks up real types automatically.
+ * Shared contract types for UI components. Sprint 1+ components use `api` directly.
  */
 import { api } from "../../convex/_generated/api";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const contractApi = api as any;
+export { api as contractApi };
 
 export type Message = {
   role: "buyer" | "seller";

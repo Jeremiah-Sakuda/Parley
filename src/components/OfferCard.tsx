@@ -1,21 +1,14 @@
 import { useQuery } from "convex/react";
-import { contractApi } from "../lib/contractApi";
-import type { Offer } from "../lib/contractApi";
-import { formatCentsPrecise, formatCents } from "../utils/money";
+import { api } from "../../convex/_generated/api";
+import { formatCents, formatCentsPrecise } from "../utils/money";
+import { leverLabel } from "../utils/levers";
 
 interface OfferCardProps {
   negotiationId: string;
 }
 
-const LEVER_LABELS: Record<string, string> = {
-  freight_72h: "72h freight",
-  net_60: "net-60",
-  defect_guarantee: "defect guarantee",
-  account_pricing: "account pricing",
-};
-
 export function OfferCard({ negotiationId }: OfferCardProps) {
-  const offer = useQuery(contractApi.offers.current, { negotiationId }) as Offer | null | undefined;
+  const offer = useQuery(api.offers.current, { negotiationId });
 
   if (offer === undefined) {
     return (
@@ -39,9 +32,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
     );
   }
 
-  const leverChips = offer.appliedLevers.map(
-    (id: string) => LEVER_LABELS[id] ?? id.replace(/_/g, " ")
-  );
+  const leverChips = offer.appliedLevers.map(leverLabel);
 
   return (
     <section className="panel offer-card">
@@ -63,7 +54,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
           <span className="label">Applied levers</span>
           <div className="lever-chips">
             {leverChips.length > 0 ? (
-              leverChips.map((label: string) => (
+              leverChips.map((label) => (
                 <span key={label} className="chip">
                   {label}
                 </span>

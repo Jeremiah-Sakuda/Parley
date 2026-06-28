@@ -22,6 +22,134 @@
   gap: 10px;
 }
 
+.brand-tagline {
+  display: block;
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.scenario-select select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.scenario-select select:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.write-flash {
+  color: var(--green);
+  animation: fadeOut 1.2s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Deal context (Sprint 1 left column) */
+.deal-context-lede {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.deal-context-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.deal-context-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deal-context-stats dt {
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.deal-context-stats dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.deal-context-levers ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deal-context-levers li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.deal-context-levers li.locked {
+  opacity: 0.55;
+}
+
+.lock-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-left: 6px;
+}
+
+.control-field-highlight input {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.lever-control.locked {
+  opacity: 0.55;
+}
+
+.lever-control.locked input:disabled {
+  cursor: not-allowed;
+}
+
 .brand-dot {
   width: 14px;
   height: 14px;
@@ -101,7 +229,16 @@
 .buyer-chat {
   display: flex;
   flex-direction: column;
-  min-height: 360px;
+  min-height: 280px;
+  flex: 1;
+}
+
+.column-left {
+  min-height: 0;
+}
+
+.column-left .offer-card {
+  flex-shrink: 0;
 }
 
 .chat-messages {
@@ -400,10 +537,35 @@
   position: relative;
 }
 
+.net-value-meter-breached {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.net-figure.breached {
+  color: var(--red);
+}
+
+.net-delta.breached {
+  color: var(--red);
+}
+
 .floor-fill {
   height: 100%;
   background: var(--green);
-  transition: width 0.4s ease;
+  transition: width 0.45s ease, background 0.3s ease;
+}
+
+.floor-fill.breached {
+  background: var(--red);
+  width: 0 !important;
+}
+
+.meter-footer .positive {
+  color: var(--green);
+}
+
+.meter-footer .breached {
+  color: var(--red);
 }
 
 .floor-line {

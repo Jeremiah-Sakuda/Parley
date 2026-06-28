@@ -1,21 +1,22 @@
 import { useQuery } from "convex/react";
-import { contractApi } from "../lib/contractApi";
-import type { LiveState } from "../lib/contractApi";
+import { api } from "../../convex/_generated/api";
 
 interface MouthGuardBadgeProps {
   negotiationId: string;
 }
 
 export function MouthGuardBadge({ negotiationId }: MouthGuardBadgeProps) {
-  const live = useQuery(contractApi.negotiate.liveState, { negotiationId }) as LiveState | null | undefined;
+  const live = useQuery(api.negotiate.liveState, { negotiationId });
 
   if (live === undefined || live === null) return null;
 
-  const overridden = Boolean(live.mouthGuardOverridden);
-
   return (
-    <span className={`mouth-guard-badge ${overridden ? "overridden" : "armed"}`}>
-      {overridden ? "Mouth-guard · overridden — safe template" : "Mouth-guard · armed"}
+    <span
+      className={`mouth-guard-badge ${live.mouthGuardOverridden ? "overridden" : "armed"}`}
+    >
+      {live.mouthGuardOverridden
+        ? "Mouth-guard · overridden — safe template"
+        : "Mouth-guard · armed"}
     </span>
   );
 }

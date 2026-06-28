@@ -1,15 +1,33 @@
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { contractApi } from "../lib/contractApi";
+import { api } from "../../convex/_generated/api";
 import type { DealCard } from "../lib/contractApi";
 import { centsToDollars, dollarsToCents } from "../utils/money";
+import { patchField } from "../utils/patchField";
 
-const SCENARIO_ID = "deal-a";
+interface ControlPanelProps {
+  scenarioId: string;
+}
 
-export function ControlPanel() {
-  const deal = useQuery(contractApi.deals.activeCard, { scenarioId: SCENARIO_ID }) as DealCard | null | undefined;
-  const update = useMutation(contractApi.dealCard.update);
+export function ControlPanel({ scenarioId }: ControlPanelProps) {
+  const serverDeal = useQuery(api.deals.activeCard, { scenarioId });
+  const update = useMutation(api.dealCard.update);
+  const [localDeal, setLocalDeal] = useState<DealCard | null>(null);
+  const [lastWrite, setLastWrite] = useState<number | null>(null);
 
-  if (deal === undefined) {
+  useEffect(() => {
+    if (serverDeal) setLocalDeal(serverDeal as DealCard);
+  }, [serverDeal]);
+
+  useEffect(() => {
+    if (lastWrite === null) return;
+    const t = setTimeout(() => setLastWrite(null), 1200);
+    return () => clearTimeout(t);
+  }, [lastWrite]);
+
+  const deal = localDeal;
+
+  if (serverDeal === undefined || deal === null) {
     return (
       <section className="panel control-panel">
         <header className="panel-header">
@@ -20,26 +38,22 @@ export function ControlPanel() {
     );
   }
 
-  if (deal === null) {
-    return (
-      <section className="panel control-panel">
-        <header className="panel-header">
-          <h2>Deal controls</h2>
-        </header>
-        <p className="empty">Deal card not found.</p>
-      </section>
-    );
-  }
-
   function write(field: string, value: unknown) {
-    void update({ scenarioId: SCENARIO_ID, field, value });
+    setLocalDeal((prev) => (prev ? patchField(prev, field, value) : prev));
+    setLastWrite(Date.now());
+    void update({ scenarioId, field, value });
   }
 
   return (
     <section className="panel control-panel">
       <header className="panel-header">
         <h2>Deal controls</h2>
-        <span className="mono-label">Live · no apply button</span>
+        <div className="panel-header-actions">
+          {lastWrite !== null && (
+            <span className="write-flash mono-label">Writing…</span>
+          )}
+          <span className="mono-label">Live · no apply button</span>
+        </div>
       </header>
 
       <div className="control-grid">
@@ -56,6 +70,7 @@ export function ControlPanel() {
           <span>Units</span>
           <input
             type="number"
+            min={1}
             value={deal.units}
             onChange={(e) => write("units", Number(e.target.value))}
           />
@@ -66,6 +81,7 @@ export function ControlPanel() {
           <input
             type="number"
             step="0.01"
+            min={0}
             value={centsToDollars(deal.listPriceCents)}
             onChange={(e) =>
               write("listPriceCents", dollarsToCents(Number(e.target.value)))
@@ -73,11 +89,12 @@ export function ControlPanel() {
           />
         </label>
 
-        <label className="control-field">
+        <label className="control-field control-field-highlight">
           <span>Floor ($ total)</span>
           <input
             type="number"
             step="1"
+            min={0}
             value={centsToDollars(deal.floorCents)}
             onChange={(e) =>
               write("floorCents", dollarsToCents(Number(e.target.value)))
@@ -102,6 +119,7 @@ export function ControlPanel() {
           <span>Whale min employees</span>
           <input
             type="number"
+            min={0}
             value={deal.whaleMinEmployees}
             onChange={(e) =>
               write("whaleMinEmployees", Number(e.target.value))
@@ -116,9 +134,13 @@ export function ControlPanel() {
             <input
               type="number"
               step="0.01"
+              min={0}
               value={centsToDollars(deal.competitor.pricePerUnitCents)}
               onChange={(e) =>
-                write("competitor.pricePerUnitCents", dollarsToCents(Number(e.target.value)))
+                write(
+                  "competitor.pricePerUnitCents",
+                  dollarsToCents(Number(e.target.value))
+                )
               }
             />
           </label>
@@ -126,6 +148,7 @@ export function ControlPanel() {
             <span>Ship days</span>
             <input
               type="number"
+              min={0}
               value={deal.competitor.shipDays}
               onChange={(e) =>
                 write("competitor.shipDays", Number(e.target.value))
@@ -137,16 +160,27 @@ export function ControlPanel() {
         <fieldset className="control-fieldset">
           <legend>Levers</legend>
           {deal.levers.map((lever, i) => (
-            <div key={lever.id} className="lever-control">
-              <span className="lever-name">{lever.label}</span>
+            <div
+              key={lever.id}
+              className={`lever-control${lever.locked ? " locked" : ""}`}
+            >
+              <span className="lever-name">
+                {lever.label}
+                {lever.locked && <span className="lock-tag">locked</span>}
+              </span>
               <label className="control-field inline">
                 <span>Cost ($)</span>
                 <input
                   type="number"
                   step="1"
+                  min={0}
+                  disabled={lever.locked}
                   value={centsToDollars(lever.costCents)}
                   onChange={(e) =>
-                    write(`levers.${i}.costCents`, dollarsToCents(Number(e.target.value)))
+                    write(
+                      `levers.${i}.costCents`,
+                      dollarsToCents(Number(e.target.value))
+                    )
                   }
                 />
               </label>
@@ -154,6 +188,8 @@ export function ControlPanel() {
                 <span>Max uses</span>
                 <input
                   type="number"
+                  min={0}
+                  disabled={lever.locked}
                   value={lever.maxUses}
                   onChange={(e) =>
                     write(`levers.${i}.maxUses`, Number(e.target.value))

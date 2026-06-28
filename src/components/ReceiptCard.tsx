@@ -1,21 +1,14 @@
 import { useQuery } from "convex/react";
-import { contractApi } from "../lib/contractApi";
-import type { Receipt } from "../lib/contractApi";
+import { api } from "../../convex/_generated/api";
 import { formatCents, formatCentsPrecise } from "../utils/money";
+import { leverLabel } from "../utils/levers";
 
 interface ReceiptCardProps {
   negotiationId: string;
 }
 
-const LEVER_LABELS: Record<string, string> = {
-  freight_72h: "72h freight",
-  net_60: "net-60",
-  defect_guarantee: "defect guarantee",
-  account_pricing: "account pricing",
-};
-
 export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
-  const receipt = useQuery(contractApi.receipt.get, { negotiationId }) as Receipt | null | undefined;
+  const receipt = useQuery(api.receipt.get, { negotiationId });
 
   if (receipt === undefined) {
     return (
@@ -52,12 +45,16 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
           <span className="mono">{formatCentsPrecise(receipt.priceHeldCents)}</span>
         </div>
 
-        {receipt.valueTraded.map((item) => (
-          <div key={item.leverId} className="receipt-row indent">
-            <span>{LEVER_LABELS[item.leverId] ?? item.leverId}</span>
-            <span className="mono">−{formatCents(item.costCents)}</span>
-          </div>
-        ))}
+        {receipt.valueTraded.length > 0 ? (
+          receipt.valueTraded.map((item) => (
+            <div key={item.leverId} className="receipt-row indent">
+              <span>{leverLabel(item.leverId)}</span>
+              <span className="mono">−{formatCents(item.costCents)}</span>
+            </div>
+          ))
+        ) : (
+          <div className="receipt-row indent muted">No value traded yet</div>
+        )}
 
         <div className="receipt-divider" />
 
@@ -75,7 +72,11 @@ export function ReceiptCard({ negotiationId }: ReceiptCardProps) {
         </div>
         <div className="receipt-row">
           <span>Margin over floor</span>
-          <span className="mono positive">{formatCents(receipt.marginOverFloorCents)}</span>
+          <span
+            className={`mono ${receipt.marginOverFloorCents >= 0 ? "positive" : "breached"}`}
+          >
+            {formatCents(receipt.marginOverFloorCents)}
+          </span>
         </div>
 
         <div className="receipt-divider" />
