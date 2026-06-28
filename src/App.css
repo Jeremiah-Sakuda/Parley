@@ -372,6 +372,9 @@
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .view-tabs {
@@ -1050,15 +1053,96 @@
   font-weight: 600;
 }
 
+.agent-ready-badge,
 .scripted-mode-badge {
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   padding: 4px 10px;
   border-radius: 999px;
+  white-space: nowrap;
+}
+
+.agent-ready-badge {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--dim);
+}
+
+.scripted-mode-badge {
   border: 1px solid var(--em-line);
   background: var(--em-soft);
   color: var(--em);
+}
+
+/* Portfolio ROI (pipeline tab) */
+.portfolio-impact-panel {
+  margin-top: 0;
+}
+
+.portfolio-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.portfolio-hero {
+  padding: 20px 22px;
+  border: 1px solid var(--em-line);
+  border-radius: 10px;
+  background: var(--em-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portfolio-hero-value {
+  font-family: var(--mono);
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--em);
+  line-height: 1.1;
+}
+
+.portfolio-hero-label {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+  max-width: 42ch;
+}
+
+.portfolio-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.portfolio-stats li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.portfolio-stats li span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fainter);
+}
+
+.portfolio-stats li strong {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* Commit safety */

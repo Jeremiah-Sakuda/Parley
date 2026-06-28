@@ -43,12 +43,26 @@ export default function App() {
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
 
   // Seed-on-load so a cold URL shows the real deal (offer + receipt consistent), not an
-  // empty shell. seed.run is idempotent: it creates the baseline only if it's missing and
-  // never wipes an in-progress demo.
+  // empty shell. seed.run is idempotent: it creates the baseline only if it's missing.
+  // Scripted deep links also reset to Deal B so the UI scenario matches the backend
+  // (seed.run creates n1 as deal-a; the recording demo expects deal-b discovery).
   const ensureSeeded = useMutation(api.seed.run);
+  const resetDemo = useMutation(api.seed.reset);
   useEffect(() => {
-    ensureSeeded({}).catch(() => {});
-  }, [ensureSeeded]);
+    void (async () => {
+      try {
+        await ensureSeeded({});
+        if (deepLinked && scripted) {
+          await resetDemo({
+            negotiationId: NEGOTIATION_ID,
+            scenarioId: DEFAULT_SCENARIO_ID,
+          });
+        }
+      } catch {
+        /* prod may be unreachable during local dev */
+      }
+    })();
+  }, [ensureSeeded, resetDemo, deepLinked, scripted]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
