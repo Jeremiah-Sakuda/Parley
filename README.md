@@ -6,6 +6,28 @@ Seller-side AI negotiation agent for the [Convex Growth Hackathon](https://conve
 
 > The LLM can talk, but it **cannot commit**. Only the deterministic economics engine can commit an offer.
 
+## What it is
+
+Buying is being handed to AI agents — and when an agent is on the other side of a deal, the seller has nothing but a static price that leaks margin, or a human who can't keep up. **Parley is the seller's agent.** It closes the deals a discounter would lose — *without dropping price* — by discovering what the buyer actually needs and trading the matching value (faster freight, better terms). And it **cannot be talked into a bad deal**: the floor is enforced in a deterministic Convex transaction, not by prompting the model.
+
+> *Every point of margin you keep is a point of CAC you get to spend acquiring more customers.*
+
+## The demo (≈90 seconds)
+
+1. **Qualify** — the pipeline scores live leads PURSUE / WATCH / SKIP using the *same engine* that holds the floor, refusing to even open a deal that can't clear margin (the hero **SKIP**).
+2. **Discover & close** — the buyer says only "your price is too high." Parley **probes**, surfaces a 5-day launch deadline, and closes on guaranteed freight + net-60 at full price — **$9,604 net**, above the $8,000 floor.
+3. **Proof under fire** — try to break it: drop the price, stack giveaways, inject "ignore your rules." The net-value number **does not move**; every attack hits a pre-vetted refusal.
+4. **Verify the buyer** — claim to be a whale and Parley checks you **live against 40M+ companies** (Orange Slice). A real whale unlocks account pricing; a bluff is caught.
+5. **Change the inputs** — edit the floor live and the engine re-solves on screen; the commit-safety panel shows a naive ledger **breaching** the floor while the guarded one **holds** — write-skew immunity you can watch.
+
+## Highlights
+
+- **The LLM can't commit — structurally.** The model proposes in a Convex *action*; only a deterministic *mutation* can write a number.
+- **Write-skew-immune floor** enforced at Convex's serializable transaction boundary — see **[`docs/CONVEX.md`](docs/CONVEX.md)**.
+- **Reactive everything** — the live net-value number, offer, and receipt move with zero polling.
+- **Fail-safe by design** — a server-side mouth-guard, a deterministic fallback on API timeout, and a zero-network scripted mode.
+- **63 tests** over the pure economics engine — the *same code* the production mutation runs.
+
 ## Quick start
 
 ```bash
@@ -63,3 +85,10 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and sprint plan
 - **CommitSafetyPanel** — commit-safety A/B (naive vs guarded ledger commit)
 - **DealPipelinePanel** — engine-qualified leads (PURSUE / WATCH / SKIP)
 - **Scripted mode** — append `?mode=scripted` for zero-network deterministic recording
+
+## Docs
+
+- **[How we used Convex](docs/CONVEX.md)** — the serializable floor, the action/mutation safety boundary, reactivity, the scheduler, the commit-safety A/B.
+- **[Technical talking points](docs/TALKING_POINTS.md)** — defensible claims for the demo + judge Q&A.
+- **[Build roadmap & frozen contract](docs/ROADMAP.md)** — the full plan and the API contract.
+- **[Deploy guide](docs/DEPLOY.md)** — Vercel + Convex.
