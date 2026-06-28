@@ -1,8 +1,8 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-// STUB (Sprint 0): the Deal A clean-close offer. Real impl (Sprint 2) reads the
-// offers table written by the engine commit mutation. Numbers come ONLY from here.
+// Real impl (Sprint 2): the standing offer is whatever the engine commit last wrote.
+// The UI renders numbers ONLY from here — never from chat/LLM text.
 const offerValidator = v.object({
   negotiationId: v.string(),
   pricePerUnitCents: v.number(),
@@ -13,24 +13,28 @@ const offerValidator = v.object({
   status: v.string(),
 });
 
-const FIXTURE = {
-  negotiationId: "n1",
-  pricePerUnitCents: 1000,
-  units: 1000,
-  appliedLevers: ["freight_72h", "net_60"],
-  netValueCents: 960400,
-  floorCents: 800000,
-  status: "accepted",
-};
-
 export const current = query({
   args: { negotiationId: v.string() },
   returns: v.union(offerValidator, v.null()),
-  handler: async () => FIXTURE,
+  handler: async (ctx, { negotiationId }) => {
+    const doc = await ctx.db
+      .query("offers")
+      .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
+      .first();
+    if (!doc) return null;
+    const { _id, _creationTime, ...offer } = doc;
+    return offer;
+  },
 });
 
 export const list = query({
   args: { negotiationId: v.string() },
   returns: v.array(offerValidator),
-  handler: async () => [FIXTURE],
+  handler: async (ctx, { negotiationId }) => {
+    const docs = await ctx.db
+      .query("offers")
+      .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
+      .collect();
+    return docs.map(({ _id, _creationTime, ...offer }) => offer);
+  },
 });

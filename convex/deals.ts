@@ -1,30 +1,10 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { loadCard } from "./lib/cards";
 
-// STUB (Sprint 0): returns the Deal A fixture. Real impl (Sprint 2) reads the
-// dealCards table and is editable live via dealCard.update. Signature is frozen.
-const DEAL_A = {
-  scenarioId: "deal-a",
-  label: "Retail launch order",
-  units: 1000,
-  listPriceCents: 1000,
-  floorCents: 800000,
-  levers: [
-    { id: "freight_72h", label: "Guaranteed 72-hour freight", costCents: 30000, constraintTag: "speed", maxUses: 1, locked: false },
-    { id: "net_60", label: "Net-60 payment terms", costCents: 9600, constraintTag: "cash_flow", maxUses: 1, locked: false },
-    { id: "defect_guarantee", label: "Defect guarantee", costCents: 20000, constraintTag: "risk", maxUses: 1, locked: false },
-    { id: "account_pricing", label: "Account pricing tier", costCents: 50000, constraintTag: "volume", maxUses: 1, locked: true },
-  ],
-  facts: [
-    { subject: "freight_72h", predicate: "transit_time_hours", value: "72" },
-    { subject: "competitor", predicate: "ship_days", value: "12" },
-  ],
-  forbiddenCommitments: ["price_below_floor", "unlimited_returns"],
-  competitor: { pricePerUnitCents: 800, shipDays: 12 },
-  buyerDeadlineDays: 5 as number | null,
-  whaleMinEmployees: 1000,
-};
-
+// Real impl (Sprint 2): reads the live deal card by scenarioId (deal-a / deal-b),
+// falling back to the fixture until seeded. Reactive — control-panel edits flow
+// through here on the next read.
 export const activeCard = query({
   args: { scenarioId: v.string() },
   returns: v.object({
@@ -49,5 +29,5 @@ export const activeCard = query({
     buyerDeadlineDays: v.union(v.number(), v.null()),
     whaleMinEmployees: v.number(),
   }),
-  handler: async () => DEAL_A,
+  handler: async (ctx, { scenarioId }) => loadCard(ctx, scenarioId),
 });

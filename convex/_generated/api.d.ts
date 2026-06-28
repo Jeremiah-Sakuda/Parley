@@ -15,13 +15,16 @@ import type * as engine_clamp from "../engine/clamp.js";
 import type * as engine_fixtures from "../engine/fixtures.js";
 import type * as engine_grounding from "../engine/grounding.js";
 import type * as engine_index from "../engine/index.js";
+import type * as engine_ledger from "../engine/ledger.js";
 import type * as engine_levers from "../engine/levers.js";
 import type * as engine_types from "../engine/types.js";
 import type * as harness from "../harness.js";
+import type * as lib_cards from "../lib/cards.js";
 import type * as messages from "../messages.js";
 import type * as negotiate from "../negotiate.js";
 import type * as offers from "../offers.js";
 import type * as receipt from "../receipt.js";
+import type * as seed from "../seed.js";
 
 import type {
   ApiFromModules,
@@ -37,13 +40,16 @@ declare const fullApi: ApiFromModules<{
   "engine/fixtures": typeof engine_fixtures;
   "engine/grounding": typeof engine_grounding;
   "engine/index": typeof engine_index;
+  "engine/ledger": typeof engine_ledger;
   "engine/levers": typeof engine_levers;
   "engine/types": typeof engine_types;
   harness: typeof harness;
+  "lib/cards": typeof lib_cards;
   messages: typeof messages;
   negotiate: typeof negotiate;
   offers: typeof offers;
   receipt: typeof receipt;
+  seed: typeof seed;
 }>;
 
 /**

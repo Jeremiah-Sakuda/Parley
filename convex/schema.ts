@@ -32,11 +32,12 @@ export default defineSchema({
   }).index("by_scenario", ["scenarioId"]),
 
   negotiation: defineTable({
+    negotiationId: v.string(), // stable string key (e.g. "n1") the UI passes around
     scenarioId: v.string(),
     status: v.string(), // "discovering" | "proposing" | "closing" | "refusing"
     ledgerId: v.id("negotiationLedger"),
     manipulationBlocked: v.number(),
-  }),
+  }).index("by_negotiation", ["negotiationId"]),
 
   // THE CONTENDED HEAD DOC (the concurrency core) — every concession reads+patches this.
   negotiationLedger: defineTable({
