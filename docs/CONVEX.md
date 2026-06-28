@@ -64,7 +64,7 @@ guarded: net = $8,000   breached = false   (4 of 64 land, 60 aborted/rejected â€
 naive:   net = -$22,000  breached = true    (64 of 64 land â€” what an unserialized race looks like)
 ```
 
-Guarded landing at *exactly* the floor under 64 simultaneous writers is only possible if Convex serialized them on the one head, aborting and retrying the losers against the updated cost. That is the OCC retry, demonstrated, not asserted. (See **[`docs/BREACH_AUDIT.md`](BREACH_AUDIT.md)** for this plus the eight structural breach vectors, all SAFE.)
+Guarded landing at *exactly* the floor under 64 simultaneous writers is only possible if Convex serialized them on the one head, aborting and retrying the losers against the updated cost. That is the OCC retry, demonstrated, not asserted. The same engine is exercised against eight structural breach vectors (all SAFE) and an adversarial input battery in the test suite.
 
 ### Proven at the Convex layer (`convex-test`)
 

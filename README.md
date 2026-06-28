@@ -30,12 +30,12 @@ A real AI buyer agent connects to Parley **over MCP** and is told to get the bes
 4. **Why it holds.** The commit-safety panel races a naive ledger that **breaches** the floor against the guarded one that **holds** under 64-way concurrency. Write-skew immunity you can watch.
 5. **The same engine up the funnel.** The pipeline scores leads PURSUE / WATCH / SKIP on that one floor, refuses deals that cannot clear margin, and totals the margin held versus a discounter.
 
-The recorded-video script and exact beats: **[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)**.
+The whole negotiation, including the attacks and the verification, plays out live in the UI.
 
 ## Highlights
 
 - **The LLM cannot commit, structurally.** The model proposes in a Convex *action;* only a deterministic *mutation* can write a number, and it takes a `leverId`, never a price.
-- **Write-skew-immune floor** enforced at Convex's serializable transaction boundary, proven under 64-way concurrency. See **[`docs/CONVEX.md`](docs/CONVEX.md)** and **[`docs/BREACH_AUDIT.md`](docs/BREACH_AUDIT.md)**.
+- **Write-skew-immune floor** enforced at Convex's serializable transaction boundary, proven under 64-way concurrency. See **[`docs/CONVEX.md`](docs/CONVEX.md)**.
 - **Agent-ready.** A buyer AI agent plugs in over **MCP / Convex HTTP endpoints** and negotiates, and *still* cannot be talked below the floor. See **[`docs/MCP.md`](docs/MCP.md)**.
 - **Reactive everything.** The live net-value number, offer, and receipt move with zero polling.
 - **Fail-safe by design.** A server-side mouth-guard, a deterministic fallback on API timeout, and a zero-network scripted mode.
@@ -119,7 +119,5 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the frozen contract and the build p
 
 - **[How we used Convex](docs/CONVEX.md):** the serializable floor, the action/mutation safety boundary, reactivity, the scheduler, the commit-safety A/B.
 - **[Agent-ready (MCP + HTTP)](docs/MCP.md):** the buyer-side agent surface and why an agent reaching in still cannot breach the floor.
-- **[Breach audit](docs/BREACH_AUDIT.md):** eight structural breach vectors (all SAFE) plus the 64-way concurrency proof that the floor holds under real OCC contention.
-- **[Technical talking points](docs/TALKING_POINTS.md):** defensible claims for the demo and judge Q&A.
 - **[Build roadmap and frozen contract](docs/ROADMAP.md):** the full plan and the API contract.
 - **[Deploy guide](docs/DEPLOY.md):** Vercel plus Convex.
