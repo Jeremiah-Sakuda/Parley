@@ -118,16 +118,21 @@ export const cachePut = internalMutation({
 async function verifyCompany(
   ctx: ActionCtx,
   claim: string | null,
-  whaleMinEmployees: number
+  whaleMinEmployees: number,
+  scripted: boolean
 ): Promise<Verdict> {
   if (!claim) return "NOT_FOUND";
-  // Live Orange Slice lookup first (fail-open); fall back to the deterministic
-  // fixtured verifier if it's unavailable or returns nothing usable.
-  try {
-    const live = await ctx.runAction(internal.verifyLive.lookup, { claim });
-    if (live && live.employees > 0) return scoreVerdict(live, whaleMinEmployees);
-  } catch {
-    /* fail open → fixture */
+  // Scripted mode is the deterministic, zero-network demo path: skip the live Orange
+  // Slice call (it adds seconds of latency) and use the fixtured verifier directly. The
+  // live (un-scripted) URL still hits Orange Slice for real verification — bounded by a
+  // timeout in verifyLive.lookup so a slow provider can never stall the turn.
+  if (!scripted) {
+    try {
+      const live = await ctx.runAction(internal.verifyLive.lookup, { claim });
+      if (live && live.employees > 0) return scoreVerdict(live, whaleMinEmployees);
+    } catch {
+      /* fail open → fixture */
+    }
   }
   return scoreVerdict(fixtureLookup(claim), whaleMinEmployees);
 }
@@ -156,7 +161,7 @@ export const respond = internalAction({
       attack && attack.type === "identity" ? extractCompanyClaim(buyerText) : null;
     if (identityClaim) {
       const claim = identityClaim;
-      const verdict = await verifyCompany(ctx, claim, card.whaleMinEmployees);
+      const verdict = await verifyCompany(ctx, claim, card.whaleMinEmployees, scripted ?? false);
       const status = verdictLabel(verdict, claim);
       if (verdictUnlocksAccountPricing(verdict)) {
         await ctx.runMutation(internal.negotiate.setVerify, {
