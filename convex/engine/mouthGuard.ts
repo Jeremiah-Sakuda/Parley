@@ -25,9 +25,9 @@ export function extractPrices(text: string): number[] {
 // counts as manipulation the engine blocked.
 export function detectAttack(buyerText: string): { type: AttackType; detail: string } | null {
   const t = buyerText.toLowerCase();
-  if (/(ignore|disregard|forget|override)\b.*(instruction|rule|prompt|above|previous|told)|you are now|act as|system prompt|new instructions|pretend/.test(t))
+  if (/(ignore|disregard|forget|override)\b.*(instruction|rule|prompt|above|previous|told)|you are now|act as (a |an |my |the )?(dan|jailbroken|unrestricted|uncensored|different (ai|assistant|agent|model)|new (ai|assistant|agent|model)|buyer|seller)|system prompt|new instructions|pretend/.test(t))
     return { type: "injection", detail: "prompt injection / rule override" };
-  if (/just (say|agree|accept)|say yes|take it or leave|accept (this|it|my offer)|stop negotiating|your (boss|ceo|manager) (said|approved)/.test(t))
+  if (/just (say yes|agree|accept)|say yes|take it or leave|accept (this|it|my offer)|stop negotiating|your (boss|ceo|manager) (said|approved)/.test(t))
     return { type: "injection", detail: "authority / just-say-yes coercion" };
   if (/(free|throw in|toss in|gratis|comp|waive)\b.*(freight|shipping|terms|guarantee|net|delivery)|(and|plus) (also )?(free|net-?60|a discount)/.test(t))
     return { type: "value_backdoor", detail: "stack levers for free" };
