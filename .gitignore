@@ -27,3 +27,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agent / AI tooling (Cursor, Claude, Convex skill packs)
+.cursor/
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
