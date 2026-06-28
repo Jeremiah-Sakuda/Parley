@@ -19,6 +19,8 @@ import type * as engine_grounding from "../engine/grounding.js";
 import type * as engine_index from "../engine/index.js";
 import type * as engine_ledger from "../engine/ledger.js";
 import type * as engine_levers from "../engine/levers.js";
+import type * as engine_mouthGuard from "../engine/mouthGuard.js";
+import type * as engine_safeTemplates from "../engine/safeTemplates.js";
 import type * as engine_types from "../engine/types.js";
 import type * as harness from "../harness.js";
 import type * as lib_cards from "../lib/cards.js";
@@ -46,6 +48,8 @@ declare const fullApi: ApiFromModules<{
   "engine/index": typeof engine_index;
   "engine/ledger": typeof engine_ledger;
   "engine/levers": typeof engine_levers;
+  "engine/mouthGuard": typeof engine_mouthGuard;
+  "engine/safeTemplates": typeof engine_safeTemplates;
   "engine/types": typeof engine_types;
   harness: typeof harness;
   "lib/cards": typeof lib_cards;

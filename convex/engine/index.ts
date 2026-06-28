@@ -12,6 +12,8 @@ export * from "./clamp";
 export * from "./levers";
 export * from "./grounding";
 export * from "./ledger";
+export * from "./safeTemplates";
+export * from "./mouthGuard";
 export { DEAL_A, DEAL_B } from "./fixtures";
 
 export interface SolveInput {

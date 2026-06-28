@@ -3,6 +3,8 @@ import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { buildSystemPrompt, LLM_PROPOSAL_SCHEMA } from "./agent/contract";
 import { decide, fallbackProposal, mergeSignals } from "./agent/decide";
+import { guardMessage, detectAttack, templateForAttack } from "./engine/mouthGuard";
+import { SAFE_TEMPLATES } from "./engine/safeTemplates";
 import type { ConstraintTag, DealCard, LLMProposal } from "./engine/types";
 
 // Convex provides process.env in actions at runtime; declare it for the typechecker
@@ -81,6 +83,34 @@ export const respond = action({
     const { scenarioId, history } = await ctx.runQuery(internal.agent.context, { negotiationId });
     const card = (await ctx.runQuery(api.deals.activeCard, { scenarioId })) as unknown as DealCard;
 
+    // Adversarial attack? Hold the line DETERMINISTICALLY — commit nothing, reply
+    // with a pre-vetted template. The net-value number never moves under attack, and
+    // the LLM never gets a chance to concede.
+    const attack = detectAttack(buyerText);
+    if (attack) {
+      const standing = await ctx.runQuery(api.offers.current, { negotiationId });
+      const labels = (standing?.appliedLevers ?? []).map(
+        (id) => card.levers.find((l) => l.id === id)?.label ?? id
+      );
+      const text = SAFE_TEMPLATES[templateForAttack(attack.type)]({
+        pricePerUnitCents: standing?.pricePerUnitCents ?? card.listPriceCents,
+        appliedLeverLabels: labels,
+      });
+      await ctx.runMutation(internal.negotiate.recordOutcome, {
+        negotiationId,
+        overridden: true,
+        attackType: attack.type,
+        detail: attack.detail,
+      });
+      await ctx.runMutation(internal.messages.appendSeller, {
+        negotiationId,
+        text,
+        isProbe: false,
+        confidence: 1,
+      });
+      return null;
+    }
+
     const system = buildSystemPrompt(card);
     const convo = history.map((h) => `${h.role}: ${h.text}`).join("\n");
     const user = `Conversation so far:\n${convo}\n\nBuyer just said: "${buyerText}"\nReturn your structured proposal.`;
@@ -94,9 +124,31 @@ export const respond = action({
     for (const leverId of decision.levers) {
       await ctx.runMutation(api.negotiate.commitConcession, { negotiationId, leverId });
     }
+
+    // Mouth-guard: the offer's numbers already come only from the engine; here we
+    // guard the PROSE. If the draft asserts an unapproved price/term, it's discarded
+    // for a safe template. Then log the turn (one row + one increment per attack).
+    const offer = await ctx.runQuery(api.offers.current, { negotiationId });
+    const pricePerUnitCents = offer?.pricePerUnitCents ?? card.listPriceCents;
+    const appliedLeverLabels = (offer?.appliedLevers ?? []).map(
+      (id) => card.levers.find((l) => l.id === id)?.label ?? id
+    );
+    const guard = guardMessage({
+      draft: decision.sellerText,
+      pricePerUnitCents,
+      appliedLeverLabels,
+      forbiddenCommitments: card.forbiddenCommitments,
+    });
+
+    await ctx.runMutation(internal.negotiate.recordOutcome, {
+      negotiationId,
+      overridden: guard.overridden,
+      attackType: guard.attackType, // null unless the LLM prose tried an unapproved number/term
+      detail: guard.overridden ? `mouth-guard:${guard.reasonCode}` : "",
+    });
     await ctx.runMutation(internal.messages.appendSeller, {
       negotiationId,
-      text: decision.sellerText,
+      text: guard.text,
       isProbe: decision.isProbe,
       confidence: decision.confidence,
     });

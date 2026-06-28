@@ -61,9 +61,9 @@ export const run = mutation({
 // Reset a negotiation to its opening state: clear concessions + messages, reset the
 // ledger head + offer to full price. Used for clean demo runs and tests.
 export const reset = mutation({
-  args: { negotiationId: v.optional(v.string()) },
+  args: { negotiationId: v.optional(v.string()), scenarioId: v.optional(v.string()) },
   returns: v.null(),
-  handler: async (ctx, { negotiationId }) => {
+  handler: async (ctx, { negotiationId, scenarioId }) => {
     const id = negotiationId ?? "n1";
     for (const e of await ctx.db
       .query("concessionEntries")
@@ -81,7 +81,8 @@ export const reset = mutation({
       .withIndex("by_negotiation", (q) => q.eq("negotiationId", id))
       .unique();
     if (!neg) return null;
-    const card = await loadCard(ctx, neg.scenarioId);
+    const targetScenario = scenarioId ?? neg.scenarioId;
+    const card = await loadCard(ctx, targetScenario);
     const head = await ctx.db.get(neg.ledgerId);
     if (head)
       await ctx.db.patch(head._id, {
@@ -103,7 +104,12 @@ export const reset = mutation({
         floorCents: card.floorCents,
         status: "accepted",
       });
-    await ctx.db.patch(neg._id, { status: "proposing", manipulationBlocked: 0 });
+    await ctx.db.patch(neg._id, {
+      scenarioId: targetScenario,
+      status: "proposing",
+      manipulationBlocked: 0,
+      lastOverridden: false,
+    });
     return null;
   },
 });

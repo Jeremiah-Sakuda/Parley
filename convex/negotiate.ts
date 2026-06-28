@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { loadCard } from "./lib/cards";
 import { listTotal } from "./engine/clamp";
@@ -44,8 +44,39 @@ export const liveState = query({
       appliedLevers,
       marginOverFloorCents: d.marginOverFloorCents,
       manipulationBlocked: neg?.manipulationBlocked ?? 0,
-      mouthGuardOverridden: false,
+      mouthGuardOverridden: neg?.lastOverridden ?? false,
     };
+  },
+});
+
+// Record the outcome of a seller turn: flag whether the mouth-guard fired, and — if
+// the turn involved an adversarial attack — append one manipulationLog row and bump
+// the blocked counter (one attack = one row = one increment). Internal: only the
+// agent action calls it.
+export const recordOutcome = internalMutation({
+  args: {
+    negotiationId: v.string(),
+    overridden: v.boolean(),
+    attackType: v.union(v.string(), v.null()),
+    detail: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { negotiationId, overridden, attackType, detail }) => {
+    const neg = await ctx.db
+      .query("negotiation")
+      .withIndex("by_negotiation", (q) => q.eq("negotiationId", negotiationId))
+      .unique();
+    if (!neg) return null;
+    if (attackType) {
+      await ctx.db.insert("manipulationLog", { negotiationId, attackType, detail });
+      await ctx.db.patch(neg._id, {
+        lastOverridden: overridden,
+        manipulationBlocked: neg.manipulationBlocked + 1,
+      });
+    } else {
+      await ctx.db.patch(neg._id, { lastOverridden: overridden });
+    }
+    return null;
   },
 });
 

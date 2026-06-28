@@ -37,6 +37,7 @@ export default defineSchema({
     status: v.string(), // "discovering" | "proposing" | "closing" | "refusing"
     ledgerId: v.id("negotiationLedger"),
     manipulationBlocked: v.number(),
+    lastOverridden: v.optional(v.boolean()), // did the last seller turn trip the mouth-guard
   }).index("by_negotiation", ["negotiationId"]),
 
   // THE CONTENDED HEAD DOC (the concurrency core) — every concession reads+patches this.
