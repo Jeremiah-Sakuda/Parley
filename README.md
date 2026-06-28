@@ -36,6 +36,10 @@ When the buyer is an AI agent, it plugs into Parley over MCP (a thin shim in [`m
 ```bash
 npx convex dev                                              # serves the endpoints on :3211
 PARLEY_BASE_URL=http://127.0.0.1:3211 node mcp/agent-demo.mjs   # a scripted buyer agent negotiating + failing to break the floor
+
+# or a LIVE LLM buyer agent — two real agents negotiating, the floor still holds:
+OPENAI_API_KEY=$(npx convex env get OPENAI_API_KEY) \
+  PARLEY_BASE_URL=http://127.0.0.1:3211 node mcp/buyer-agent.mjs
 ```
 
 ## Quick start
