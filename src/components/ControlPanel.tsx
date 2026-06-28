@@ -11,6 +11,9 @@ export function ControlPanel({ scenarioId }: ControlPanelProps) {
   const deal = useQuery(api.deals.activeCard, { scenarioId });
   const update = useMutation(api.dealCard.update);
   const [lastWrite, setLastWrite] = useState<number | null>(null);
+  // Collapsed by default so the dense editor stays off the demo's wow frames; the "edit the
+  // floor and watch it re-solve" beat is one click away.
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (lastWrite === null) return;
@@ -42,10 +45,24 @@ export function ControlPanel({ scenarioId }: ControlPanelProps) {
           {lastWrite !== null && (
             <span className="write-flash mono-label">Writing…</span>
           )}
-          <span className="mono-label">Live · no apply button</span>
+          <button
+            type="button"
+            className="control-toggle mono-label"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? "Hide" : "Edit live"}
+          </button>
         </div>
       </header>
 
+      {!expanded && (
+        <p className="offer-caption">
+          Edit the floor, price, or any lever and the meter re-solves live. No apply button.
+        </p>
+      )}
+
+      {expanded && (
       <div className="control-grid">
         <label className="control-field">
           <span>Label</span>
@@ -207,6 +224,7 @@ export function ControlPanel({ scenarioId }: ControlPanelProps) {
           />
         </label>
       </div>
+      )}
     </section>
   );
 }

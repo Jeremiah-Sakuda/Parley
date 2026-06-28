@@ -139,7 +139,7 @@ export default function App() {
                   ))}
                 </select>
               </label>
-              <span className="scenario-tag">{scenario?.id} · {NEGOTIATION_ID}</span>
+              <span className="scenario-tag">{scenario?.label.split(":")[0] ?? scenario?.id}</span>
             </>
           )}
         </div>

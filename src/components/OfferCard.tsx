@@ -8,6 +8,24 @@ interface OfferCardProps {
   negotiationId: string;
 }
 
+// Turn the engine's verify status into a clean badge + sentence for an on-screen chip
+// (no raw lowercase prefix, no em dash leaking onto a wow frame).
+function formatVerify(status: string): { tag: string; detail: string; kind: "verified" | "checked" } {
+  let tag = "Unverified";
+  let kind: "verified" | "checked" = "checked";
+  let detail = status;
+  if (status.startsWith("verified:")) {
+    tag = "Verified";
+    kind = "verified";
+    detail = status.slice("verified:".length);
+  } else if (status.startsWith("checked:")) {
+    tag = "Checked";
+    detail = status.slice("checked:".length);
+  }
+  detail = detail.replace(/\s*—\s*/g, ", ").replace(/\s+/g, " ").trim();
+  return { tag, detail: detail.charAt(0).toUpperCase() + detail.slice(1), kind };
+}
+
 export function OfferCard({ negotiationId }: OfferCardProps) {
   const offer = useQuery(api.offers.current, { negotiationId });
   const live = useQuery(api.negotiate.liveState, { negotiationId });
@@ -51,8 +69,7 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
     );
   }
 
-  const verifyStatus = live?.verifyStatus;
-  const isVerified = verifyStatus?.startsWith("verified:");
+  const verify = live?.verifyStatus ? formatVerify(live.verifyStatus) : null;
 
   return (
     <section className={`panel offer-card${flash ? " offer-card-flash" : ""}`}>
@@ -61,12 +78,10 @@ export function OfferCard({ negotiationId }: OfferCardProps) {
         <span className={`status-badge status-${offer.status}`}>{offer.status}</span>
       </header>
 
-      {verifyStatus && (
-        <div
-          className={`verify-chip${isVerified ? " verified" : " checked"}`}
-          title="Buyer identity verification result"
-        >
-          {verifyStatus}
+      {verify && (
+        <div className={`verify-chip ${verify.kind}`} title="Buyer identity verification result">
+          <span className="verify-tag">{verify.tag}</span>
+          <span className="verify-detail">{verify.detail}</span>
         </div>
       )}
 

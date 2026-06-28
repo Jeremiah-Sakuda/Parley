@@ -80,6 +80,20 @@
   animation: fadeOut 1.2s ease forwards;
 }
 
+.control-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  color: var(--dim);
+}
+
+.control-toggle:hover {
+  color: var(--em);
+  border-color: var(--em-line);
+}
+
 @keyframes fadeOut {
   0% { opacity: 1; }
   70% { opacity: 1; }
@@ -639,12 +653,32 @@
 }
 
 .verify-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   margin: 0 0 14px;
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 12px;
   line-height: 1.4;
   border: 1px solid var(--border);
+}
+
+.verify-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  flex-shrink: 0;
+}
+
+.verify-detail {
+  font-size: 12px;
 }
 
 .verify-chip.verified {
@@ -1188,7 +1222,8 @@
 }
 
 .race-verdict {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
   margin: 0 0 10px;
 }
 
