@@ -47,6 +47,28 @@ describe("decide() — discovery policy", () => {
   });
 });
 
+describe("decide() — the close message reflects the close", () => {
+  it("replaces a probing/empty LLM draft with a confident close when the engine closes", () => {
+    const d = decide(
+      { ...base, inferredConstraint: "speed", constraintConfidence: 0.8, requestedLevers: ["freight_72h"], draftMessage: "Can you clarify your timeline?" },
+      DEAL_A
+    );
+    expect(d.mode).toBe("respond");
+    expect(d.sellerText.endsWith("?")).toBe(false);
+    expect(d.sellerText).not.toContain("clarify");
+    expect(d.sellerText.toLowerCase()).toMatch(/freight|net-60|value/);
+  });
+
+  it("keeps a genuine closing draft as written", () => {
+    const draft = "Price holds — I'll lock in freight and net-60 so you make the launch.";
+    const d = decide(
+      { ...base, inferredConstraint: "speed", constraintConfidence: 0.8, requestedLevers: ["freight_72h"], draftMessage: draft },
+      DEAL_A
+    );
+    expect(d.sellerText).toBe(draft);
+  });
+});
+
 describe("decide() — the LLM cannot commit a number", () => {
   it("emits only lever ids and prose, never a price, even when the draft names one", () => {
     const d = decide(

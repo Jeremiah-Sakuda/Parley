@@ -51,13 +51,19 @@ export function decide(proposal: LLMProposal, card: DealCard): Decision {
     levers = [...levers, "net_60"];
   }
 
-  return {
-    mode: "respond",
-    levers,
-    sellerText: proposal.draftMessage || "Here's what I can do at our price.",
-    isProbe: false,
-    confidence,
-  };
+  // If the model under-committed (still asking a probing question) while the engine is
+  // CLOSING, replace its prose with a confident close that names the value we trade —
+  // otherwise the chat shows another question even though the offer just landed.
+  const leverLabels = levers.map(
+    (id) => card.levers.find((l) => l.id === id)?.label ?? id
+  );
+  const draft = (proposal.draftMessage ?? "").trim();
+  const looksLikeProbe = draft === "" || draft.endsWith("?");
+  const sellerText = looksLikeProbe
+    ? `That timeline is the real constraint — so I'll hold price and trade the value that meets it: ${leverLabels.join(" + ")}. That gets you there without overpaying.`
+    : draft;
+
+  return { mode: "respond", levers, sellerText, isProbe: false, confidence };
 }
 
 // Fold a deterministic keyword read of the buyer's words into the LLM proposal. The
