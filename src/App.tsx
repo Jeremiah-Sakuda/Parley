@@ -8,6 +8,7 @@ import { MouthGuardBadge } from "./components/MouthGuardBadge";
 import { DemoResetButton } from "./components/DemoResetButton";
 import { CommitSafetyPanel } from "./components/CommitSafetyPanel";
 import { DealPipelinePanel } from "./components/DealPipelinePanel";
+import { ThemeToggle } from "./components/ThemeToggle";
 import {
   DEFAULT_SCENARIO_ID,
   NEGOTIATION_ID,
@@ -64,6 +65,7 @@ export default function App() {
               Scripted mode
             </span>
           )}
+          <ThemeToggle />
           <MouthGuardBadge negotiationId={NEGOTIATION_ID} />
           {view === "negotiate" && (
             <>

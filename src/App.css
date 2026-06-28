@@ -8,12 +8,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 0 24px;
+  height: 64px;
   border-bottom: 1px solid var(--border);
-  background: rgba(9, 9, 11, 0.95);
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .brand {
@@ -42,7 +46,7 @@
 
 .scenario-select select:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--em);
 }
 
 .sr-only {
@@ -139,7 +143,7 @@
 }
 
 .control-field-highlight input {
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: var(--em-line);
 }
 
 .lever-control.locked {
@@ -151,10 +155,39 @@
 }
 
 .brand-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  background: var(--green);
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: var(--em);
+  box-shadow: 0 0 14px var(--em-soft);
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.theme-toggle button {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  border: none;
+  cursor: pointer;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--faint);
+  transition: all 0.15s;
+}
+
+.theme-toggle button.active {
+  background: var(--surface2);
+  color: var(--text);
 }
 
 .brand-name {
@@ -185,7 +218,7 @@
 }
 
 .demo-reset-btn:hover:not(:disabled) {
-  border-color: var(--green);
+  border-color: var(--em-line);
   color: var(--text);
 }
 
@@ -211,8 +244,8 @@
 }
 
 .probe-bubble {
-  border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.12);
+  border-color: var(--em-line);
+  box-shadow: inset 0 0 0 1px var(--em-soft);
 }
 
 .chat-bubble {
@@ -264,7 +297,7 @@
 }
 
 .quick-prompt-chip:hover:not(:disabled) {
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: var(--em-line);
   color: var(--text);
 }
 
@@ -288,8 +321,8 @@
 }
 
 .mouth-guard-badge.armed .mouth-guard-dot {
-  background: var(--green);
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  background: var(--em);
+  box-shadow: 0 0 6px var(--em-soft);
 }
 
 .receipt-section-label {
@@ -353,8 +386,8 @@
 }
 
 .view-tab.active {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--green);
+  background: var(--em-soft);
+  color: var(--em);
 }
 
 .view-tab:hover:not(.active) {
@@ -371,8 +404,9 @@
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 20px;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .panel-header {
@@ -432,15 +466,15 @@
 
 .chat-bubble.buyer {
   align-self: flex-end;
-  background: #27272a;
-  color: #e4e4e7;
+  background: var(--surface2);
+  color: var(--text);
   border-bottom-right-radius: 4px;
 }
 
 .chat-bubble.seller {
   align-self: flex-start;
-  background: var(--green-dim);
-  border: 1px solid rgba(16, 185, 129, 0.22);
+  background: var(--em-soft);
+  border: 1px solid var(--em-line);
   border-bottom-left-radius: 4px;
 }
 
@@ -495,39 +529,46 @@
 }
 
 .offer-card-flash {
-  border-color: rgba(16, 185, 129, 0.55);
+  border-color: var(--em-line);
   transition: border-color 0.3s ease;
 }
 
 .chat-composer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   border-top: 1px solid var(--border);
-  padding-top: 12px;
+  padding-top: 14px;
 }
 
 .chat-composer input {
   flex: 1;
-  background: var(--bg);
+  background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   color: var(--text);
+  font-size: 13.5px;
 }
 
 .chat-composer input:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--em);
 }
 
 .chat-composer button {
-  background: var(--green);
-  color: #062017;
+  background: var(--btn-bg);
+  color: var(--btn-text);
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 9px 16px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s;
+}
+
+.chat-composer button:hover:not(:disabled) {
+  background: var(--em-bright);
 }
 
 .chat-composer button:disabled {
@@ -580,9 +621,9 @@
 }
 
 .chip-unlocked {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: var(--green-dim);
-  color: var(--green);
+  border-color: var(--em-line);
+  background: var(--em-soft);
+  color: var(--em);
 }
 
 .verify-chip {
@@ -595,15 +636,15 @@
 }
 
 .verify-chip.verified {
-  color: var(--green);
-  border-color: rgba(16, 185, 129, 0.4);
-  background: var(--green-dim);
+  color: var(--em);
+  border-color: var(--em-line);
+  background: var(--em-soft);
 }
 
 .verify-chip.checked {
   color: var(--amber);
-  border-color: rgba(245, 158, 11, 0.4);
-  background: var(--amber-dim);
+  border-color: var(--amber-line);
+  background: var(--amber-soft);
 }
 
 /* Deal pipeline */
@@ -628,16 +669,16 @@
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface);
 }
 
 .pipeline-row.skip-hero {
-  border-color: rgba(239, 68, 68, 0.45);
-  background: var(--red-dim);
+  border-color: var(--red-line);
+  background: var(--red-soft);
 }
 
 .pipeline-row.decision-pursue {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: var(--em-line);
 }
 
 .pipeline-row-head {
@@ -683,27 +724,27 @@
 }
 
 .verdict-pursue {
-  color: var(--green);
-  border-color: rgba(16, 185, 129, 0.4);
-  background: var(--green-dim);
+  color: var(--em);
+  border-color: var(--em-line);
+  background: var(--em-soft);
 }
 
 .verdict-watch {
-  color: var(--dim);
+  color: var(--faint);
 }
 
 .verdict-skip {
   color: var(--red);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: var(--red-dim);
+  border-color: var(--red-line);
+  background: var(--red-soft);
 }
 
 .pipeline-open-btn {
   flex-shrink: 0;
   align-self: center;
   background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  color: var(--green);
+  border: 1px solid var(--em-line);
+  color: var(--em);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
@@ -713,7 +754,7 @@
 }
 
 .pipeline-open-btn:hover:not(:disabled) {
-  background: var(--green-dim);
+  background: var(--em-soft);
 }
 
 .pipeline-open-btn:disabled {
@@ -739,22 +780,22 @@
 
 .status-accepted,
 .status-closing {
-  color: var(--green);
-  border-color: rgba(16, 185, 129, 0.4);
-  background: var(--green-dim);
+  color: var(--em);
+  border-color: var(--em-line);
+  background: var(--em-soft);
 }
 
 .status-counter {
   color: var(--amber);
-  border-color: rgba(245, 158, 11, 0.4);
-  background: var(--amber-dim);
+  border-color: var(--amber-line);
+  background: var(--amber-soft);
 }
 
 .status-refused,
 .status-refusing {
   color: var(--red);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: var(--red-dim);
+  border-color: var(--red-line);
+  background: var(--red-soft);
 }
 
 .status-proposing,
@@ -783,16 +824,16 @@
 }
 
 .control-field input {
-  background: var(--bg);
+  background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 8px 10px;
   color: var(--text);
 }
 
 .control-field input:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--em);
 }
 
 .control-fieldset {
@@ -850,7 +891,7 @@
   font-size: clamp(40px, 6vw, 56px);
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--green);
+  color: var(--em);
   line-height: 1;
   transition: transform 0.2s ease, color 0.2s ease;
 }
@@ -862,7 +903,7 @@
 .net-delta {
   font-family: var(--mono);
   font-size: 13px;
-  color: var(--green);
+  color: var(--em);
 }
 
 .floor-bar-wrap {
@@ -871,15 +912,15 @@
 }
 
 .floor-bar {
-  height: 16px;
+  height: 15px;
   border-radius: 8px;
-  background: var(--border);
+  background: var(--surface2);
   overflow: hidden;
   position: relative;
 }
 
 .net-value-meter-breached {
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: var(--red-line);
 }
 
 .net-figure.breached {
@@ -892,12 +933,14 @@
 
 .floor-fill {
   height: 100%;
-  background: var(--green);
-  transition: width 0.45s ease, background 0.3s ease;
+  background: linear-gradient(90deg, var(--em), var(--em-bright));
+  box-shadow: 0 0 14px var(--em-soft);
+  transition: width 0.45s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .floor-fill.breached {
   background: var(--red);
+  box-shadow: 0 0 16px var(--red-soft);
   width: 0 !important;
 }
 
@@ -914,7 +957,7 @@
   top: -4px;
   bottom: -4px;
   width: 2px;
-  background: rgba(161, 161, 170, 0.5);
+  background: color-mix(in srgb, var(--fainter) 50%, transparent);
   transform: translateX(-50%);
 }
 
@@ -986,8 +1029,8 @@
 
 .mouth-guard-badge.overridden {
   color: var(--amber);
-  border-color: rgba(245, 158, 11, 0.4);
-  background: var(--amber-dim);
+  border-color: var(--amber-line);
+  background: var(--amber-soft);
 }
 
 .receipt-row.blocked {
@@ -1004,9 +1047,9 @@
   letter-spacing: 0.04em;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(99, 102, 241, 0.45);
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
+  border: 1px solid var(--em-line);
+  background: var(--em-soft);
+  color: var(--em);
 }
 
 /* Commit safety */
@@ -1042,13 +1085,13 @@
 }
 
 .race-panel.held {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: var(--green-dim);
+  border-color: var(--em-line);
+  background: var(--em-soft);
 }
 
 .race-panel.breached {
-  border-color: rgba(239, 68, 68, 0.4);
-  background: var(--red-dim);
+  border-color: var(--red-line);
+  background: var(--red-soft);
 }
 
 .race-verdict {

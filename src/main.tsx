@@ -2,7 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import App from "./App";
+import { initTheme } from "./utils/theme";
 import "./index.css";
+
+initTheme();
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL as string | undefined;
 

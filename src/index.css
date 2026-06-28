@@ -1,20 +1,65 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
+/* Light mode default — tokens from Parley Homepage v2 design handoff */
 :root {
-  --bg: #09090b;
-  --surface: #18181b;
-  --border: #27272a;
-  --text: #fafafa;
-  --muted: #a1a1aa;
-  --dim: #71717a;
-  --green: #10b981;
-  --green-dim: rgba(16, 185, 129, 0.12);
-  --red: #ef4444;
-  --red-dim: rgba(239, 68, 68, 0.12);
-  --amber: #f59e0b;
-  --amber-dim: rgba(245, 158, 11, 0.12);
+  --bg: #fbfbfc;
+  --surface: #ffffff;
+  --surface2: #f4f4f5;
+  --border: #e6e6e9;
+  --border-strong: #d4d4d8;
+  --text: #18181b;
+  --muted: #52525b;
+  --faint: #71717a;
+  --fainter: #a1a1aa;
+  --em: #059669;
+  --em-bright: #047857;
+  --em-soft: rgba(16, 185, 129, 0.1);
+  --em-line: rgba(5, 150, 105, 0.28);
+  --red: #dc2626;
+  --red-soft: rgba(220, 38, 38, 0.1);
+  --red-line: rgba(220, 38, 38, 0.4);
+  --amber: #d97706;
+  --amber-soft: rgba(217, 119, 6, 0.1);
+  --amber-line: rgba(217, 119, 6, 0.35);
+  --glow: rgba(16, 185, 129, 0.12);
+  --btn-bg: #059669;
+  --btn-text: #ffffff;
+  --grid: rgba(0, 0, 0, 0.04);
+  --header-bg: color-mix(in srgb, var(--bg) 78%, transparent);
   --font: "Inter", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
+  --green: var(--em);
+  --green-dim: var(--em-soft);
+  --red-dim: var(--red-soft);
+  --amber-dim: var(--amber-soft);
+  --dim: var(--faint);
+}
+
+[data-theme="dark"] {
+  --bg: #09090b;
+  --surface: #18181b;
+  --surface2: #1f1f24;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --text: #fafafa;
+  --muted: #a1a1aa;
+  --faint: #71717a;
+  --fainter: #52525b;
+  --em: #10b981;
+  --em-bright: #14c98c;
+  --em-soft: rgba(16, 185, 129, 0.08);
+  --em-line: rgba(16, 185, 129, 0.22);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.1);
+  --red-line: rgba(239, 68, 68, 0.4);
+  --amber: #f59e0b;
+  --amber-soft: rgba(245, 158, 11, 0.12);
+  --amber-line: rgba(245, 158, 11, 0.4);
+  --glow: rgba(16, 185, 129, 0.16);
+  --btn-bg: #10b981;
+  --btn-text: #062017;
+  --grid: rgba(255, 255, 255, 0.035);
+  --header-bg: color-mix(in srgb, var(--bg) 78%, transparent);
 }
 
 *,
@@ -28,9 +73,12 @@ body {
   margin: 0;
   padding: 0;
   background: var(--bg);
+  background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
   color: var(--text);
-  font-family: var(--font);
+  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 #root {
@@ -38,21 +86,22 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
 .mono {
-  font-family: var(--mono);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
 .mono-label {
-  font-family: var(--mono);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--dim);
+  color: var(--faint);
 }
 
 .muted {
