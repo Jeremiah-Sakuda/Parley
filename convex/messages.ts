@@ -30,9 +30,9 @@ export const list = query({
 // Inserts the buyer turn and schedules the seller's agent.respond. The reply appears
 // reactively via list() — the UI never calls the action directly.
 export const sendBuyer = mutation({
-  args: { negotiationId: v.string(), text: v.string() },
+  args: { negotiationId: v.string(), text: v.string(), scripted: v.optional(v.boolean()) },
   returns: v.null(),
-  handler: async (ctx, { negotiationId, text }) => {
+  handler: async (ctx, { negotiationId, text, scripted }) => {
     await ctx.db.insert("messages", {
       negotiationId,
       role: "buyer",
@@ -40,7 +40,11 @@ export const sendBuyer = mutation({
       isProbe: false,
       confidence: 0,
     });
-    await ctx.scheduler.runAfter(0, api.agent.respond, { negotiationId, buyerText: text });
+    await ctx.scheduler.runAfter(0, api.agent.respond, {
+      negotiationId,
+      buyerText: text,
+      scripted: scripted ?? false,
+    });
     return null;
   },
 });
