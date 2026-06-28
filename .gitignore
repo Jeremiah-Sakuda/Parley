@@ -35,3 +35,6 @@ dist-ssr
 AGENTS.md
 CLAUDE.md
 skills-lock.json
+
+# Submission working file (local only, not tracked in the repo)
+submission.md
